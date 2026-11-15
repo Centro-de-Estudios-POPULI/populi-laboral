@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mercado laboral por departamento · Populi</title>
+  <title data-en="Labor market by department · Populi">Mercado laboral por departamento · Populi</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -24,24 +24,24 @@
 <body>
   <div class="wrap">
     <div class="sec-hd">
-      <div class="sec-title"><span class="accent-bar"></span>El mercado laboral por departamento</div>
-      <div class="sec-sub" id="sub">Cada departamento frente a Bolivia, con cuatro trimestres juntos para que la cifra sea precisa</div>
+      <div class="sec-title" data-en='<span class="accent-bar"></span>The labor market by department'><span class="accent-bar"></span>El mercado laboral por departamento</div>
+      <div class="sec-sub" id="sub" data-en="Each department compared with Bolivia, with four quarters pooled so that the figure is precise">Cada departamento frente a Bolivia, con cuatro trimestres juntos para que la cifra sea precisa</div>
     </div>
 
     <div class="hz-bar">
-      <div class="hz-item"><span class="hz-lbl">Indicador</span><div class="hz-grp" id="b-medida"></div></div>
-      <div class="hz-item"><span class="hz-lbl">Periodo</span><div class="hz-grp" id="b-periodo"></div></div>
-      <div class="hz-item"><span class="hz-lbl">Ámbito</span><div class="hz-grp" id="b-ambito"></div></div>
+      <div class="hz-item"><span class="hz-lbl" data-en="Indicator">Indicador</span><div class="hz-grp" id="b-medida"></div></div>
+      <div class="hz-item"><span class="hz-lbl" data-en="Period">Periodo</span><div class="hz-grp" id="b-periodo"></div></div>
+      <div class="hz-item"><span class="hz-lbl" data-en="Area">Ámbito</span><div class="hz-grp" id="b-ambito"></div></div>
     </div>
 
     <div class="kpi-grid" id="kpis"></div>
 
     <div class="main-grid">
       <div class="chart-card">
-        <div class="grafico" id="chart"><div class="loading"><div class="spinner"></div><span>Cargando el mapa del empleo…</span></div></div>
+        <div class="grafico" id="chart"><div class="loading"><div class="spinner"></div><span data-en="Loading the employment map…">Cargando el mapa del empleo…</span></div></div>
       </div>
       <div class="panel">
-        <div class="panel-hd"><span class="panel-hd-t">Lectura del indicador</span><span class="panel-hd-d" id="panel-fecha"></span></div>
+        <div class="panel-hd"><span class="panel-hd-t" data-en="Reading the indicator">Lectura del indicador</span><span class="panel-hd-d" id="panel-fecha"></span></div>
         <div class="panel-body" id="panel"></div>
       </div>
     </div>
@@ -52,20 +52,27 @@
 
   <script>
   (function () {
-    var C = PM.C, NB = ' ', NAC = 'Bolivia';
+    var C = PM.C, T = PM.t, NB = ' ', NAC = 'Bolivia';
     // Escala DIVERGENTE con la bisagra en Bolivia (la del mapa de inflación). Cálido = peor que el país; turquesa =
     // mejor. Para los indicadores donde «más» es mejor (ingreso, seguro de salud, participación) la rampa se invierte.
     var RAMPA = ['#005F73', '#0A9396', '#94D2BD', '#E9D8A6', '#EDA13E', '#DF5D25', '#C71E1D'];
     var REDONDOS = [0.05, 0.1, 0.2, 0.25, 0.5, 1, 2, 2.5, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000];
     var TX_CLASE = { '#EDA13E': '#A86E00' };
     var MED = {
-      td: { nombre: 'Desocupación', larga: 'tasa de desocupación', mejorBaja: true, fmt: 'pct', desc: 'Busca trabajo y no lo consigue (% de la fuerza de trabajo)' },
-      lu4: { nombre: 'Subutilización', larga: 'subutilización amplia (LU4)', mejorBaja: true, fmt: 'pct', desc: 'Desocupados + subocupados por horas + fuerza potencial (%)' },
-      toi: { nombre: 'Informalidad', larga: 'ocupación informal', mejorBaja: true, fmt: 'pct', desc: 'Ocupados con empleo informal (%)' },
-      ylab_med: { nombre: 'Ingreso', larga: 'ingreso laboral mediano', mejorBaja: false, fmt: 'bs', desc: 'Mediana del ingreso mensual de la ocupación principal (Bs del 1T-2026)' },
-      asal_seguro_salud: { nombre: 'Seguro de salud', larga: 'asalariados con seguro de salud', mejorBaja: false, fmt: 'pct', desc: 'Asalariados con seguro de salud por su trabajo (%)' },
-      bajo_smn: { nombre: 'Bajo el mínimo', larga: 'ocupados con ingreso menor al salario mínimo', mejorBaja: true, fmt: 'pct', desc: 'Ocupados que ganan menos que el salario mínimo (%)' },
-      tgp: { nombre: 'Participación', larga: 'tasa global de participación', mejorBaja: false, fmt: 'pct', desc: 'Trabaja o busca trabajo (% de la población de 14 años o más)' }
+      td: { nombre: T('Desocupación', 'Unemployment'), larga: T('tasa de desocupación', 'unemployment rate'), mejorBaja: true, fmt: 'pct',
+        desc: T('Busca trabajo y no lo consigue (% de la fuerza de trabajo)', 'Looking for work without finding it (% of the labor force)') },
+      lu4: { nombre: T('Subutilización', 'Underutilization'), larga: T('subutilización amplia (LU4)', 'broad underutilization (LU4)'), mejorBaja: true, fmt: 'pct',
+        desc: T('Desocupados + subocupados por horas + fuerza potencial (%)', 'Unemployed + time-related underemployed + potential labor force (%)') },
+      toi: { nombre: T('Informalidad', 'Informality'), larga: T('ocupación informal', 'informal employment'), mejorBaja: true, fmt: 'pct',
+        desc: T('Ocupados con empleo informal (%)', 'Employed people in informal employment (%)') },
+      ylab_med: { nombre: T('Ingreso', 'Income'), larga: T('ingreso laboral mediano', 'median labor income'), mejorBaja: false, fmt: 'bs',
+        desc: '' },   // desc: con la base de los datos, al cargar
+      asal_seguro_salud: { nombre: T('Seguro de salud', 'Health insurance'), larga: T('asalariados con seguro de salud', 'wage employees with health insurance'), mejorBaja: false, fmt: 'pct',
+        desc: T('Asalariados con seguro de salud por su trabajo (%)', 'Wage employees with health insurance through their job (%)') },
+      bajo_smn: { nombre: T('Bajo el mínimo', 'Below the minimum'), larga: T('ocupados con ingreso menor al salario mínimo', 'employed people earning less than the minimum wage'), mejorBaja: true, fmt: 'pct',
+        desc: T('Ocupados que ganan menos que el salario mínimo (%)', 'Employed people earning less than the minimum wage (%)') },
+      tgp: { nombre: T('Participación', 'Participation'), larga: T('tasa global de participación', 'participation rate'), mejorBaja: false, fmt: 'pct',
+        desc: T('Trabaja o busca trabajo (% de la población de 14 años o más)', 'Working or looking for work (% of the population aged 14 or older)') }
     };
     // Indicadores que no se comparan en un departamento (ver la pregunta «Beni»)
     var NO_COMP = { lu4: ['Beni'] };
@@ -76,14 +83,16 @@
     var med = function () { return MED[estado.medida]; };
     var fmt = function (v, m) { if (v == null) return '—'; return (m || med()).fmt === 'bs' ? L.bs(v) : PM.pct(v, 1); };
     var dif = function (d, m) { return (m || med()).fmt === 'bs' ? (d >= 0 ? '+' : '−') + 'Bs' + NB + PM.num(Math.abs(d), 0) : PM.pp(d, 1); };
-    var etqPer = function (j) { var p = P[j]; return p === 'AM' ? 'últimos 4 trimestres (' + PM.fecha(D.ventana_am[0]) + ' a ' + PM.fecha(D.ventana_am[1]) + ')' : 'año ' + p + (esEst(j) ? ' (estimación POPULI)' : ''); };
-    var etqCorta = function (j) { var p = P[j]; return p === 'AM' ? PM.fecha(D.ventana_am[0]) + '–' + PM.fecha(D.ventana_am[1]) : p + (esEst(j) ? ' · estimado' : ''); };
+    var etqPer = function (j) { var p = P[j]; return T(p === 'AM' ? 'últimos 4 trimestres (' + PM.fecha(D.ventana_am[0]) + ' a ' + PM.fecha(D.ventana_am[1]) + ')' : 'año ' + p + (esEst(j) ? ' (estimación POPULI)' : ''),
+      p === 'AM' ? 'last four quarters (' + PM.fecha(D.ventana_am[0]) + ' to ' + PM.fecha(D.ventana_am[1]) + ')' : 'year ' + p + (esEst(j) ? ' (POPULI estimate)' : '')); };
+    var etqCorta = function (j) { var p = P[j]; return p === 'AM' ? PM.fecha(D.ventana_am[0]) + '–' + PM.fecha(D.ventana_am[1]) : p + (esEst(j) ? T(' · estimado', ' · estimated') : ''); };
     // 2020 del total: sin encuesta rural de abril a diciembre. Va la ESTIMACIÓN POPULI (1T observado + 2T-4T estimados),
     // aparte de la serie oficial y marcada en cada cifra (metodologia.html#hueco-2020)
     var esEst = function (j) { j = j == null ? estado.per : j; return estado.ambito === 'total' && !!D.estimados && P[j] === D.estimados.periodo; };
 
     PM.cargar(['departamentos.json', 'bolivia.geojson']).then(function (r) {
       D = r[0]; P = D.periodos; estado.per = P.length - 1;
+      MED.ylab_med.desc = T('Mediana del ingreso mensual de la ocupación principal (', 'Median monthly income from the main job (') + L.base(D.metadata).corto + ')';
       DEPS = Object.keys(D.datos.total).filter(function (c) { return c !== NAC; });
       var porNom = {}; DEPS.forEach(function (c) { porNom[sinTilde(c)] = c; });
       r[1].features.forEach(function (ft) { var c = porNom[sinTilde(ft.properties.name)]; if (c) CIU_DE[ft.properties.name] = c; });
@@ -92,9 +101,9 @@
       PM.imagen = { aspecto: 760 / disposicion(760).H };
       // siete indicadores no entran en una botonera en el teléfono: ahí, el selector nativo
       (PM.pequeno() ? L.selector : PM.botonera)(document.getElementById('b-medida'), Object.keys(MED).map(function (k) { return [k, MED[k].nombre]; }), estado.medida,
-        function (v) { estado.medida = v; todo(); }, 'Indicador');
+        function (v) { estado.medida = v; todo(); }, T('Indicador', 'Indicator'));
       periodos();
-      PM.botonera(document.getElementById('b-ambito'), [['total', 'Total'], ['urbano', 'Urbano']], estado.ambito, function (v) { estado.ambito = v; periodos(); todo(); });
+      PM.botonera(document.getElementById('b-ambito'), [['total', 'Total'], ['urbano', L.N('Urbano')]], estado.ambito, function (v) { estado.ambito = v; periodos(); todo(); });
       textos(); cifras();
       var el = document.getElementById('chart'); el.innerHTML = '';
       grafico = PM.montar(el, opciones);
@@ -102,16 +111,17 @@
       panel('Santa Cruz');
       PM.alCambiarTema(function () { cifras(); panel(estado.k); });
       PM.preguntas(document.getElementById('preguntas'), PREGUNTAS);
-      document.getElementById('fuente').innerHTML = L.fuente({}, PM.fecha(D.ventana_am[1])) + ' · Mapa: límites departamentales' +
-        (D.estimados ? ' · <strong>2020</strong>: estimación POPULI (el INE no levantó el área rural de abril a diciembre), <a href="' + D.estimados.metodologia + '" target="_blank" rel="noopener">ver metodología</a>' : '');
+      document.getElementById('fuente').innerHTML = L.fuente({}, PM.fecha(D.ventana_am[1])) + T(' · Mapa: límites departamentales', ' · Map: department boundaries') +
+        (D.estimados ? T(' · <strong>2020</strong>: estimación POPULI (el INE no levantó el área rural de abril a diciembre), <a href="' + D.estimados.metodologia + '" target="_blank" rel="noopener">ver metodología</a>',
+          ' · <strong>2020</strong>: POPULI estimate (INE did not survey rural areas from April to December), <a href="' + L.metodologia(D.estimados.metodologia) + '" target="_blank" rel="noopener">see methodology</a>') : '');
     }).catch(function (e) { console.error(e); PM.error(document.getElementById('chart')); });
 
     // los años con dato en el ámbito elegido (2020 no tiene total: sin encuesta rural de abril a diciembre)
     function periodos() {
       var ops = [];
-      for (var j = P.length - 1; j >= 0; j--) if (val(NAC, j) != null) ops.push([String(j), P[j] === 'AM' ? 'Últimos 4 trim.' : P[j] + (esEst(j) ? ' (estimado)' : '')]);
+      for (var j = P.length - 1; j >= 0; j--) if (val(NAC, j) != null) ops.push([String(j), P[j] === 'AM' ? T('Últimos 4 trim.', 'Last 4 quarters') : P[j] + (esEst(j) ? T(' (estimado)', ' (estimated)') : '')]);
       if (val(NAC, estado.per) == null) estado.per = +ops[0][0];
-      L.selector(document.getElementById('b-periodo'), ops, String(estado.per), function (v) { estado.per = +v; todo(); }, 'Periodo');
+      L.selector(document.getElementById('b-periodo'), ops, String(estado.per), function (v) { estado.per = +v; todo(); }, T('Periodo', 'Period'));
     }
     function todo() {
       textos(); cifras();
@@ -207,8 +217,8 @@
     var peor = function (v, nac) { return med().mejorBaja ? v > nac : v < nac; };
 
     function textos() {
-      document.getElementById('sub').textContent = med().desc + ' · ' + etqPer(estado.per) + (estado.ambito === 'urbano' ? ' · sólo área urbana' : '') +
-        '. Rojizo: peor que Bolivia; turquesa: mejor.';
+      document.getElementById('sub').textContent = med().desc + ' · ' + etqPer(estado.per) + (estado.ambito === 'urbano' ? T(' · sólo área urbana', ' · urban areas only') : '') +
+        T('. Rojizo: peor que Bolivia; turquesa: mejor.', '. Reddish: worse than Bolivia; teal: better.');
     }
 
     function cifras() {
@@ -220,10 +230,10 @@
       var anterior = estado.per > 0 ? val(NAC, estado.per - 1) : null, d = anterior == null ? null : nac - anterior;
       document.getElementById('kpis').innerHTML =
         PM.kpi({ color: C.tinta, rotulo: 'Bolivia · ' + etqCorta(estado.per), valor: fmt(nac),
-          delta: d == null ? med().nombre : PM.flecha(d, med().fmt === 'bs' ? 5 : 0.05) + ' ' + dif(d) + ' frente a ' + P[estado.per - 1].replace('AM', 'el año móvil'), tono: 'neutro', serie: serie(NAC) }) +
-        PM.kpi({ color: colV(alto.v), rotulo: 'Más alto · ' + alto.c, valor: cifraTxt(alto.c), delta: dif(alto.v - nac) + ' frente a Bolivia', tono: tono(alto.v), serie: serie(alto.c) }) +
-        PM.kpi({ color: colV(bajo.v), rotulo: 'Más bajo · ' + bajo.c, valor: cifraTxt(bajo.c), delta: dif(bajo.v - nac) + ' frente a Bolivia', tono: tono(bajo.v), serie: serie(bajo.c) }) +
-        PM.kpi({ color: C.oro, rotulo: 'Santa Cruz', valor: cifraTxt('Santa Cruz'), delta: val('Santa Cruz') == null ? 'no comparable' : dif(val('Santa Cruz') - nac) + ' frente a Bolivia',
+          delta: d == null ? med().nombre : PM.flecha(d, med().fmt === 'bs' ? 5 : 0.05) + ' ' + dif(d) + T(' frente a ', ' vs. ') + P[estado.per - 1].replace('AM', T('el año móvil', 'the rolling year')), tono: 'neutro', serie: serie(NAC) }) +
+        PM.kpi({ color: colV(alto.v), rotulo: T('Más alto · ', 'Highest · ') + alto.c, valor: cifraTxt(alto.c), delta: dif(alto.v - nac) + T(' frente a Bolivia', ' vs. Bolivia'), tono: tono(alto.v), serie: serie(alto.c) }) +
+        PM.kpi({ color: colV(bajo.v), rotulo: T('Más bajo · ', 'Lowest · ') + bajo.c, valor: cifraTxt(bajo.c), delta: dif(bajo.v - nac) + T(' frente a Bolivia', ' vs. Bolivia'), tono: tono(bajo.v), serie: serie(bajo.c) }) +
+        PM.kpi({ color: C.oro, rotulo: 'Santa Cruz', valor: cifraTxt('Santa Cruz'), delta: val('Santa Cruz') == null ? T('no comparable', 'not comparable') : dif(val('Santa Cruz') - nac) + T(' frente a Bolivia', ' vs. Bolivia'),
           tono: val('Santa Cruz') == null ? 'neutro' : tono(val('Santa Cruz')), serie: serie('Santa Cruz') });
     }
 
@@ -261,7 +271,7 @@
         type: 'map', id: 'mapa', name: med().nombre, map: 'bolivia', roam: false, selectedMode: false, z: 2,
         aspectScale: ESC, layoutCenter: [Q.mapa.x + Q.mapa.w / 2, Q.mapa.y + Q.mapa.h / 2], layoutSize: ASP < 1 ? Q.mapa.h : Q.mapa.w,
         itemStyle: { areaColor: niebla(), borderColor: card, borderWidth: 1 },
-        label: { show: true, formatter: function (p) { var c = CIU_DE[p.name]; return '{n|' + c + '}\n{v|' + (val(c) == null ? 'n. c.' : cifraTxt(c)) + '}'; } },
+        label: { show: true, formatter: function (p) { var c = CIU_DE[p.name]; return '{n|' + c + '}\n{v|' + (val(c) == null ? T('n. c.', 'n.c.') : cifraTxt(c)) + '}'; } },
         emphasis: { label: { show: true }, itemStyle: { borderColor: tinta, borderWidth: 1.5 } },
         select: { disabled: true },
         data: datosMapa
@@ -299,7 +309,7 @@
               emphasis: { style: { fontWeight: 700 } } }
           ];
           if (v == null) {
-            hijos.push({ type: 'text', z2: 5, x: cero + GAP, y: 0, style: { text: 'no comparable', fontFamily: inter, fontSize: fCif - 1, fontWeight: 500, fill: pz, align: 'left', verticalAlign: 'middle' } });
+            hijos.push({ type: 'text', z2: 5, x: cero + GAP, y: 0, style: { text: T('no comparable', 'not comparable'), fontFamily: inter, fontSize: fCif - 1, fontWeight: 500, fill: pz, align: 'left', verticalAlign: 'middle' } });
           } else {
             var x1 = X(v), neg = v < 0;
             hijos.push({ type: 'rect', z2: 2, shape: { x: Math.min(cero, x1), y: -bh / 2, width: Math.max(1, Math.abs(x1 - cero)), height: bh }, style: { fill: colB(c), opacity: cal(c) === 1 || esEst() ? 0.55 : 1 } });   // referencial o estimado: más clara
@@ -332,8 +342,10 @@
 
     function leyenda(B, h, nac, chico) {
       var pz = PM.dk() ? '#8A9699' : '#5C6B70', tinta = PM.col(C.tinta), inter = PM.inter(), mono = PM.mono();
-      var sw = B.w / 7, y = B.y, els = [], esBs = med().fmt === 'bs', dec = esBs ? 0 : (PM.tick(h).indexOf(',') < 0 ? 0 : PM.tick(h).split(',')[1].length);
-      els.push({ id: 'ley-t', type: 'text', silent: true, x: B.x, y: y, style: { text: 'Diferencia con Bolivia (' + fmt(nac) + ')' + (esBs ? ', en Bs' : ', en pp'), font: '600 ' + (chico ? 10 : 10.5) + 'px ' + inter, fill: tinta, align: 'left', verticalAlign: 'top' } });
+      // los decimales del paso, leídos de su rótulo: la coma decimal en castellano, el punto en inglés
+      var sd = PM.en ? '.' : ',';
+      var sw = B.w / 7, y = B.y, els = [], esBs = med().fmt === 'bs', dec = esBs ? 0 : (PM.tick(h).indexOf(sd) < 0 ? 0 : PM.tick(h).split(sd)[1].length);
+      els.push({ id: 'ley-t', type: 'text', silent: true, x: B.x, y: y, style: { text: T('Diferencia con Bolivia (' + fmt(nac) + ')' + (esBs ? ', en Bs' : ', en pp'), 'Difference from Bolivia (' + fmt(nac) + ')' + (esBs ? ', in Bs' : ', in pp')), font: '600 ' + (chico ? 10 : 10.5) + 'px ' + inter, fill: tinta, align: 'left', verticalAlign: 'top' } });
       var rampa = med().mejorBaja ? RAMPA : RAMPA.slice().reverse();
       rampa.forEach(function (col, i) {
         var a = Math.round(B.x + i * sw), b = Math.round(B.x + (i + 1) * sw);
@@ -345,8 +357,8 @@
           style: { text: (v > 0 ? '+' : '') + PM.num(v, dec), font: '500 ' + (chico ? 9.5 : 10) + 'px ' + mono, fill: pz, align: 'center', verticalAlign: 'top' } });
       });
       var fS = '500 ' + (chico ? 9.5 : 10) + 'px ' + inter;
-      els.push({ id: 'ley-a', type: 'text', silent: true, x: B.x, y: y + 48, style: { text: '← menos que Bolivia', font: fS, fill: pz, align: 'left', verticalAlign: 'top' } });
-      els.push({ id: 'ley-b', type: 'text', silent: true, x: B.x + B.w, y: y + 48, style: { text: 'más que Bolivia →', font: fS, fill: pz, align: 'right', verticalAlign: 'top' } });
+      els.push({ id: 'ley-a', type: 'text', silent: true, x: B.x, y: y + 48, style: { text: T('← menos que Bolivia', '← lower than Bolivia'), font: fS, fill: pz, align: 'left', verticalAlign: 'top' } });
+      els.push({ id: 'ley-b', type: 'text', silent: true, x: B.x + B.w, y: y + 48, style: { text: T('más que Bolivia →', 'higher than Bolivia →'), font: fS, fill: pz, align: 'right', verticalAlign: 'top' } });
       return els;
     }
 
@@ -387,11 +399,11 @@
       var nac = val(NAC);
       if (c === NAC) return PM.ttTitulo('Bolivia · ' + etqCorta(estado.per), med().larga) + PM.ttFila(C.tinta, 'Bolivia', fmt(nac), 'area');
       var v = val(c);
-      var h = PM.ttTitulo(c + ' · ' + etqCorta(estado.per), med().larga + (estado.ambito === 'urbano' ? ' · urbano' : ''));
-      if (v == null) return h + PM.ttFila(null, 'No comparable', '—');
-      h += PM.ttFila(colorDe(c, paso()), c, cifraTxt(c), 'area') + PM.ttFila(C.tinta, 'Bolivia', fmt(nac), 'area') + PM.ttTotal('Diferencia', dif(v - nac));
-      if (cal(c) === 1) h += PM.ttPie('Entre paréntesis: dato referencial (error de muestreo del 15 al 25 %)');
-      if (esEst()) h += PM.ttPie('2020: estimación POPULI (sin encuesta rural de abril a diciembre)');
+      var h = PM.ttTitulo(c + ' · ' + etqCorta(estado.per), med().larga + (estado.ambito === 'urbano' ? T(' · urbano', ' · urban') : ''));
+      if (v == null) return h + PM.ttFila(null, T('No comparable', 'Not comparable'), '—');
+      h += PM.ttFila(colorDe(c, paso()), c, cifraTxt(c), 'area') + PM.ttFila(C.tinta, 'Bolivia', fmt(nac), 'area') + PM.ttTotal(T('Diferencia', 'Difference'), dif(v - nac));
+      if (cal(c) === 1) h += PM.ttPie(T('Entre paréntesis: dato referencial (error de muestreo del 15 al 25 %)', 'In parentheses: indicative figure (sampling error of 15% to 25%)'));
+      if (esEst()) h += PM.ttPie(T('2020: estimación POPULI (sin encuesta rural de abril a diciembre)', '2020: POPULI estimate (no rural survey from April to December)'));
       return h;
     }
 
@@ -404,22 +416,26 @@
       var html = PM.pb(C.tinta, 'Bolivia', fmt(nac), med().desc + ', ' + etqPer(estado.per) + '.');
       if (c !== NAC) {
         var v = val(c), r = fil.map(function (x) { return x.c; }).indexOf(c) + 1;
-        var desc = v == null ? 'No comparable en este indicador (ver las preguntas).'
-          : 'Puesto <strong>' + r + ' de ' + n + '</strong> (de mayor a menor); diferencia con Bolivia: <strong>' + dif(v - nac) + '</strong>.' + (cal(c) === 1 ? ' Dato referencial.' : '');
+        var desc = v == null ? T('No comparable en este indicador (ver las preguntas).', 'Not comparable for this indicator (see the questions).')
+          : T('Puesto <strong>' + r + ' de ' + n + '</strong> (de mayor a menor); diferencia con Bolivia: <strong>' + dif(v - nac) + '</strong>.' + (cal(c) === 1 ? ' Dato referencial.' : ''),
+            'Rank <strong>' + r + ' of ' + n + '</strong> (highest to lowest); difference from Bolivia: <strong>' + dif(v - nac) + '</strong>.' + (cal(c) === 1 ? ' Indicative figure.' : ''));
         var j19 = P.indexOf('2019');
-        if (v != null && j19 >= 0 && j19 !== estado.per && val(c, j19) != null) desc += ' En 2019: ' + cifraTxt(c, j19) + '.';
+        if (v != null && j19 >= 0 && j19 !== estado.per && val(c, j19) != null) desc += T(' En 2019: ', ' In 2019: ') + cifraTxt(c, j19) + '.';
         var tabla = '<div class="ind">' + Object.keys(MED).map(function (k) {
           return '<span class="ind-n">' + MED[k].nombre + '</span><span class="ind-v">' + cifraTxt(c, null, k) + '</span>';
         }).join('') + '</div>';
         html += PM.pb(v == null ? C.gris : peor(v, nac) ? C.rojo : C.turquesa, c, v == null ? '—' : cifraTxt(c), desc).replace(/<\/div>$/, tabla + '</div>');
       }
-      document.getElementById('panel').innerHTML = html + PM.ctx((esEst() ? 'Entre abril y diciembre de 2020 el INE no levantó la encuesta en el área rural: las cifras de 2020 son una <strong>estimación POPULI</strong> (el primer trimestre observado y los otros tres estimados con ' + L.METODO + '). <a href="' + D.estimados.metodologia + '" target="_blank" rel="noopener">Ver metodología</a>. ' : '') + lectura());
+      document.getElementById('panel').innerHTML = html + PM.ctx((esEst() ? T('Entre abril y diciembre de 2020 el INE no levantó la encuesta en el área rural: las cifras de 2020 son una <strong>estimación POPULI</strong> (el primer trimestre observado y los otros tres estimados con ' + L.METODO + '). <a href="' + D.estimados.metodologia + '" target="_blank" rel="noopener">Ver metodología</a>. ',
+        'Between April and December 2020 INE did not run the survey in rural areas: the 2020 figures are a <strong>POPULI estimate</strong> (the first quarter as observed and the other three estimated using ' + L.METODO + '). <a href="' + L.metodologia(D.estimados.metodologia) + '" target="_blank" rel="noopener">See methodology</a>. ') : '') + lectura());
     }
     function lectura() {
       var nac = val(NAC), fil = ordenadas(), n = fil.length; if (!n) return '';
       var a = fil[0], z = fil[n - 1], peores = fil.filter(function (x) { return peor(x.v, nac); });
-      var t = 'En ' + med().larga + ', el rango va de <strong>' + z.c + '</strong> (' + cifraTxt(z.c) + ') a <strong>' + a.c + '</strong> (' + cifraTxt(a.c) + '); Bolivia: ' + fmt(nac) + '. ' +
-        '<strong>' + peores.length + ' de ' + n + '</strong> departamentos están peor que el promedio del país.';
+      var t = T('En ' + med().larga + ', el rango va de <strong>' + z.c + '</strong> (' + cifraTxt(z.c) + ') a <strong>' + a.c + '</strong> (' + cifraTxt(a.c) + '); Bolivia: ' + fmt(nac) + '. ' +
+        '<strong>' + peores.length + ' de ' + n + '</strong> departamentos están peor que el promedio del país.',
+        'Range for ' + med().larga + ': from <strong>' + z.c + '</strong> (' + cifraTxt(z.c) + ') to <strong>' + a.c + '</strong> (' + cifraTxt(a.c) + '); Bolivia: ' + fmt(nac) + '. ' +
+        '<strong>' + peores.length + ' of ' + n + '</strong> departments fare worse than the national average.');
       var sc = val('Santa Cruz');
       if (sc != null) t += ' Santa Cruz: ' + cifraTxt('Santa Cruz') + ' (' + dif(sc - nac) + ').';
       return t;
@@ -429,17 +445,27 @@
     PM.leyendaImagen = function () { return []; };
     PM.tablaDatos = function () {
       var ks = Object.keys(MED);
-      var fila = function (c) { return [c, etqCorta(estado.per) + (esEst() ? ' (estimación POPULI)' : ''), estado.ambito].concat(ks.map(function (k) { return val(c, null, k); })); };
-      return { cols: ['Departamento', 'Periodo', 'Ámbito'].concat(ks.map(function (k) { return MED[k].nombre + (MED[k].fmt === 'bs' ? ' (Bs del 1T-2026)' : ' (%)'); })),
+      var fila = function (c) { return [c, etqCorta(estado.per) + (esEst() ? T(' (estimación POPULI)', ' (POPULI estimate)') : ''), T(estado.ambito, estado.ambito === 'urbano' ? 'urban' : estado.ambito)].concat(ks.map(function (k) { return val(c, null, k); })); };
+      return { cols: [T('Departamento', 'Department'), T('Periodo', 'Period'), T('Ámbito', 'Area')].concat(ks.map(function (k) { return MED[k].nombre + (MED[k].fmt === 'bs' ? ' (' + L.base(D.metadata).corto + ')' : ' (%)'); })),
         filas: [fila(NAC)].concat(DEPS.map(fila)) };
     };
 
     var PREGUNTAS = [
-      ['¿Por qué cuatro trimestres juntos?', 'La ECE tiene unas 17.800 viviendas por trimestre: alcanza para Bolivia, el área urbana y los departamentos del eje, pero en los departamentos más chicos el error de muestreo de un trimestre es alto (la desocupación de Pando o del Beni sale con un error relativo del 20-27 %). Juntando los cuatro trimestres del año el error baja a la mitad. «Últimos 4 trim.» es el año móvil que termina en el último trimestre con microdato.'],
-      ['¿Cómo se lee el mapa?', 'El color es la <strong>diferencia con Bolivia</strong>: rojizo, peor que el país; turquesa, mejor; arena, parecido. Para la desocupación, la informalidad y quienes ganan menos que el mínimo, «peor» es más alto; para el ingreso, el seguro de salud y la participación, «peor» es más bajo. El ranking ordena las mismas cifras de mayor a menor, con Bolivia arriba y su raya punteada detrás de las barras.'],
-      ['¿Qué quieren decir los paréntesis?', 'Una cifra entre paréntesis (y su barra más clara) es <strong>referencial</strong>: su error de muestreo está entre 15 y 25 % del valor. Sirve para ordenar, no para afirmar diferencias chicas. Las cifras con un error mayor no se muestran. Los ingresos son medianas: no llevan esa marca.'],
-      ['¿Por qué el Beni no tiene subutilización?', 'Desde el tercer trimestre de 2021, en el Beni casi nadie de los que trabajan menos de 40 horas declara querer trabajar más (0-3 %, frente a 10-40 % en el resto del país). Es un efecto de cómo se levanta la encuesta, no un dato del mercado laboral: su subocupación y su subutilización amplia no son comparables.'],
-      ['¿Y 2020?', 'Entre abril y diciembre de 2020 la encuesta no se levantó en el área rural. En el ámbito urbano, 2020 es dato del INE. En el total, 2020 es una <strong>estimación POPULI</strong>: el primer trimestre observado y los otros tres armados con el área urbana observada más la parte rural de cada departamento estimada con un promedio de modelos de series de tiempo (y ajustada para que los nueve sumen el área rural del país). El seguro de salud no se estima: la pregunta no se hizo en la pandemia. <a href="../metodologia.html#hueco-2020" target="_blank" rel="noopener">Metodología</a>.']
+      [T('¿Por qué cuatro trimestres juntos?', 'Why pool four quarters?'), T(
+        'La ECE tiene unas 17.800 viviendas por trimestre: alcanza para Bolivia, el área urbana y los departamentos del eje, pero en los departamentos más chicos el error de muestreo de un trimestre es alto (la desocupación de Pando o del Beni sale con un error relativo del 20-27 %). Juntando los cuatro trimestres del año el error baja a la mitad. «Últimos 4 trim.» es el año móvil que termina en el último trimestre con microdato.',
+        'The ECE covers about 17,800 dwellings per quarter: enough for Bolivia, urban areas and the departments of the central axis, but in the smaller departments the sampling error of a single quarter is high (unemployment in Pando or Beni comes with a relative error of 20–27%). Pooling the four quarters of the year cuts the error in half. “Last 4 quarters” is the rolling year that ends in the latest quarter with microdata.')],
+      [T('¿Cómo se lee el mapa?', 'How do you read the map?'), T(
+        'El color es la <strong>diferencia con Bolivia</strong>: rojizo, peor que el país; turquesa, mejor; arena, parecido. Para la desocupación, la subutilización, la informalidad y quienes ganan menos que el mínimo, «peor» es más alto; para el ingreso, el seguro de salud y la participación, «peor» es más bajo. El ranking ordena las mismas cifras de mayor a menor, con Bolivia arriba y su raya punteada detrás de las barras.',
+        'The color shows the <strong>difference from Bolivia</strong>: reddish, worse than the country as a whole; teal, better; sand, similar. For unemployment, underutilization, informality and those earning less than the minimum wage, “worse” means higher; for income, health insurance and participation, “worse” means lower. The ranking sorts the same figures from highest to lowest, with Bolivia at the top and its dashed line behind the bars.')],
+      [T('¿Qué quieren decir los paréntesis?', 'What do the parentheses mean?'), T(
+        'Una cifra entre paréntesis (y su barra más clara) es <strong>referencial</strong>: su error de muestreo está entre 15 y 25 % del valor. Sirve para ordenar, no para afirmar diferencias chicas. Las cifras con un error mayor no se muestran. Los ingresos son medianas: no llevan esa marca.',
+        'A figure in parentheses (with its lighter bar) is <strong>indicative</strong>: its sampling error is between 15% and 25% of the value. It is useful for ranking, not for asserting small differences. Figures with a larger error are not shown. Incomes are medians: they do not carry that mark.')],
+      [T('¿Por qué el Beni no tiene subutilización?', 'Why is there no underutilization figure for Beni?'), T(
+        'Desde el tercer trimestre de 2021, en el Beni casi nadie de los que trabajan menos de 40 horas declara querer trabajar más (0-3 %, frente a 10-40 % en el resto del país). Es un efecto de cómo se levanta la encuesta, no un dato del mercado laboral: su subocupación y su subutilización amplia no son comparables.',
+        'Since the third quarter of 2021, almost no one in Beni who works fewer than 40 hours reports wanting to work more (0–3%, compared with 10–40% in the rest of the country). This is an effect of how the survey is carried out, not a feature of the labor market: Beni\'s time-related underemployment and broad underutilization are not comparable.')],
+      [T('¿Y 2020?', 'What about 2020?'), T(
+        'Entre abril y diciembre de 2020 la encuesta no se levantó en el área rural. En el ámbito urbano, 2020 es dato del INE. En el total, 2020 es una <strong>estimación POPULI</strong>: el primer trimestre observado y los otros tres armados con el área urbana observada más la parte rural de cada departamento estimada con un promedio de modelos de series de tiempo (y ajustada para que los nueve sumen el área rural del país). El seguro de salud no se estima: la pregunta no se hizo en la pandemia. <a href="../metodologia.html#hueco-2020" target="_blank" rel="noopener">Metodología</a>.',
+        'Between April and December 2020 the survey was not carried out in rural areas. For urban areas, 2020 is INE data. For the total, 2020 is a <strong>POPULI estimate</strong>: the first quarter as observed, and the other three built from the observed urban areas plus the rural part of each department, estimated with an average of time-series models (and adjusted so that the nine departments add up to the country\'s rural total). Health insurance is not estimated: the question was not asked during the pandemic. <a href="' + L.metodologia('../metodologia.html#hueco-2020') + '" target="_blank" rel="noopener">Methodology</a>.')]
     ];
   })();
   </script>

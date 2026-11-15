@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Entradas y salidas del empleo · Populi</title>
+  <title data-en="Flows into and out of employment · Populi">Entradas y salidas del empleo · Populi</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -16,14 +16,14 @@
 <body>
   <div class="wrap">
     <div class="sec-hd">
-      <div class="sec-title"><span class="accent-bar"></span>Entradas y salidas del empleo</div>
-      <div class="sec-sub" id="sub">Área urbana · las mismas personas, un trimestre después: de cada 100 en una situación, cuántas pasan a otra</div>
+      <div class="sec-title" data-en='<span class="accent-bar"></span>Flows into and out of employment'><span class="accent-bar"></span>Entradas y salidas del empleo</div>
+      <div class="sec-sub" id="sub" data-en="Urban areas · the same people, one quarter later: out of every 100 in one situation, how many move to another">Área urbana · las mismas personas, un trimestre después: de cada 100 en una situación, cuántas pasan a otra</div>
     </div>
 
     <div class="hz-bar">
-      <div class="hz-item"><span class="hz-lbl">Flujo</span><div class="hz-grp" id="b-medida"></div></div>
-      <div class="hz-item"><span class="hz-lbl">Serie</span><div class="hz-grp" id="b-suave"></div></div>
-      <div class="hz-item"><span class="hz-lbl">Ámbito</span><div class="hz-grp" id="b-ambito"></div></div>
+      <div class="hz-item"><span class="hz-lbl" data-en="Flow">Flujo</span><div class="hz-grp" id="b-medida"></div></div>
+      <div class="hz-item"><span class="hz-lbl" data-en="Series">Serie</span><div class="hz-grp" id="b-suave"></div></div>
+      <div class="hz-item"><span class="hz-lbl" data-en="Area">Ámbito</span><div class="hz-grp" id="b-ambito"></div></div>
     </div>
 
     <div class="kpi-grid" id="kpis"></div>
@@ -31,10 +31,10 @@
     <div class="main-grid">
       <div class="chart-card">
         <div class="chart-ctrl"><div class="tog-grp" id="pastillas"></div></div>
-        <div class="grafico" id="chart"><div class="loading"><div class="spinner"></div><span>Cargando los flujos…</span></div></div>
+        <div class="grafico" id="chart"><div class="loading"><div class="spinner"></div><span data-en="Loading flows…">Cargando los flujos…</span></div></div>
       </div>
       <div class="panel">
-        <div class="panel-hd"><span class="panel-hd-t">Lectura del indicador</span><span class="panel-hd-d" id="panel-fecha"></span></div>
+        <div class="panel-hd"><span class="panel-hd-t" data-en="Reading the indicator">Lectura del indicador</span><span class="panel-hd-d" id="panel-fecha"></span></div>
         <div class="panel-body" id="panel"></div>
       </div>
     </div>
@@ -45,20 +45,20 @@
 
   <script>
   (function () {
-    var C = PM.C;
+    var C = PM.C, T = PM.t;
     var MED = {
-      salidas: { nombre: 'Salidas', series: [
-        { k: 'separacion', nombre: 'A la desocupación', largo: 'Ocupados que pasan a desocupados', color: C.rojo, ancho: 2.5 },
-        { k: 'salida_inactividad', nombre: 'A la inactividad', largo: 'Ocupados que dejan de trabajar y de buscar', color: C.oro, ancho: 2 }] },
-      entradas: { nombre: 'Entradas', series: [
-        { k: 'hallazgo', nombre: 'Desde la desocupación', largo: 'Desocupados que consiguen empleo', color: C.turquesa, ancho: 2.5 },
-        { k: 'entrada_desde_inactividad', nombre: 'Desde la inactividad', largo: 'Inactivos que empiezan a trabajar', color: { claro: C.petroleo, oscuro: C.menta }, ancho: 2 }] },
-      formalidad: { nombre: 'Formalidad', series: [
-        { k: 'informalizacion', nombre: 'De formal a informal', largo: 'Con empleo formal que pasan a uno informal', color: C.rojo, ancho: 2.5 },
-        { k: 'formalizacion', nombre: 'De informal a formal', largo: 'Con empleo informal que pasan a uno formal', color: C.turquesa, ancho: 2.5 }] }
+      salidas: { nombre: T('Salidas', 'Outflows'), series: [
+        { k: 'separacion', nombre: T('A la desocupación', 'To unemployment'), largo: T('Ocupados que pasan a desocupados', 'Employed people who become unemployed'), color: C.rojo, ancho: 2.5 },
+        { k: 'salida_inactividad', nombre: T('A la inactividad', 'To inactivity'), largo: T('Ocupados que dejan de trabajar y de buscar', 'Employed people who stop working and do not look for work'), color: C.oro, ancho: 2 }] },
+      entradas: { nombre: T('Entradas', 'Inflows'), series: [
+        { k: 'hallazgo', nombre: T('Desde la desocupación', 'From unemployment'), largo: T('Desocupados que consiguen empleo', 'Unemployed people who find a job'), color: C.turquesa, ancho: 2.5 },
+        { k: 'entrada_desde_inactividad', nombre: T('Desde la inactividad', 'From inactivity'), largo: T('Inactivos que empiezan a trabajar', 'Inactive people who start working'), color: { claro: C.petroleo, oscuro: C.menta }, ancho: 2 }] },
+      formalidad: { nombre: T('Formalidad', 'Formality'), series: [
+        { k: 'informalizacion', nombre: T('De formal a informal', 'Formal to informal'), largo: T('Con empleo formal que pasan a uno informal', 'People in formal employment who move to an informal job'), color: C.rojo, ancho: 2.5 },
+        { k: 'formalizacion', nombre: T('De informal a formal', 'Informal to formal'), largo: T('Con empleo informal que pasan a uno formal', 'People in informal employment who move to a formal job'), color: C.turquesa, ancho: 2.5 }] }
     };
     // Sólo área urbana: la muestra rural de la ECE no tiene panel (sus viviendas se visitan una sola vez)
-    var AMB = [['Urbano', 'Bolivia urbana'], ['Eje (LP-CB-SC)', 'Eje urbano (LP-CB-SC)'], ['Resto (CH-OR-PT-TJ-BE-PA)', 'Resto urbano']];
+    var AMB = [['Urbano', T('Bolivia urbana', 'Urban Bolivia')], ['Eje (LP-CB-SC)', T('Eje urbano (LP-CB-SC)', 'Urban central axis (LP-CB-SC)')], ['Resto (CH-OR-PT-TJ-BE-PA)', T('Resto urbano', 'Rest of urban areas')]];
     var estado = { medida: 'salidas', suave: '4t', ambito: 'Urbano', idx: null };
     var activas = {}; Object.keys(MED).forEach(function (m) { activas[m] = new Set(MED[m].series.map(function (s) { return s.k; })); });
     var D, K, grafico;
@@ -75,10 +75,10 @@
     PM.cargar(['flujos.json']).then(function (r) {
       D = r[0]; K = D.periodos; estado.idx = K.length - 1;
       PM.botonera(document.getElementById('b-medida'), Object.keys(MED).map(function (k) { return [k, MED[k].nombre]; }), estado.medida,
-        function (v) { estado.medida = v; pastillas(); grafico.redibujar(); panel(estado.idx); }, 'Flujo');
-      PM.botonera(document.getElementById('b-suave'), [['4t', 'Prom. 4 trim.'], ['t', 'Trimestral']], estado.suave,
+        function (v) { estado.medida = v; pastillas(); grafico.redibujar(); panel(estado.idx); }, T('Flujo', 'Flow'));
+      PM.botonera(document.getElementById('b-suave'), [['4t', T('Prom. 4 trim.', '4-quarter avg.')], ['t', T('Trimestral', 'Quarterly')]], estado.suave,
         function (v) { estado.suave = v; cifras(); grafico.redibujar(); panel(estado.idx); });
-      L.selector(document.getElementById('b-ambito'), AMB, estado.ambito, function (v) { estado.ambito = v; cifras(); grafico.redibujar(); panel(estado.idx); }, 'Ámbito');
+      L.selector(document.getElementById('b-ambito'), AMB, estado.ambito, function (v) { estado.ambito = v; cifras(); grafico.redibujar(); panel(estado.idx); }, T('Ámbito', 'Area'));
       pastillas(); cifras();
       var el = document.getElementById('chart'); el.innerHTML = '';
       grafico = PM.montar(el, opciones);
@@ -86,7 +86,7 @@
       panel(estado.idx);
       PM.alCambiarTema(function () { cifras(); panel(estado.idx); });
       PM.preguntas(document.getElementById('preguntas'), PREGUNTAS);
-      document.getElementById('fuente').innerHTML = L.fuente({}, PM.fecha(K[K.length - 1])) + ' · Personas enlazadas por el panel de la ECE';
+      document.getElementById('fuente').innerHTML = L.fuente({}, PM.fecha(K[K.length - 1])) + T(' · Personas enlazadas por el panel de la ECE', ' · People linked through the ECE panel');
     }).catch(function (e) { console.error(e); PM.error(document.getElementById('chart')); });
 
     function pastillas() {
@@ -99,7 +99,7 @@
         var x = S(s.k), u = L.ultimo(x), a = L.haceUnAnio(K, u), d = a >= 0 && x[a] != null ? x[u] - x[a] : null;
         var buenoSiSube = s.k === 'hallazgo' || s.k === 'formalizacion';
         return PM.kpi({ color: s.color, rotulo: s.largo, valor: PM.pct(x[u], 1),
-          delta: d == null ? PM.fecha(K[u]) : PM.flecha(d, 0.1) + ' ' + PM.pp(d) + ' en un año', tono: d == null || Math.abs(d) < 0.1 ? 'neutro' : (d > 0) === buenoSiSube ? 'bueno' : 'malo',
+          delta: d == null ? PM.fecha(K[u]) : PM.flecha(d, 0.1) + ' ' + PM.pp(d) + T(' en un año', ' in a year'), tono: d == null || Math.abs(d) < 0.1 ? 'neutro' : (d > 0) === buenoSiSube ? 'bueno' : 'malo',
           serie: PM.ultimos(x.filter(function (v) { return v != null; }), 16) });
       }).join('');
     }
@@ -117,7 +117,7 @@
         tooltip: PM.tooltip(function (ps) {
           if (!ps.length) return '';
           var i = ps[0].dataIndex; panel(i);
-          var h = PM.ttTitulo(PM.fecha(ANTERIOR(K[i])) + ' → ' + PM.fecha(K[i]), estado.ambito + (estado.suave === '4t' ? ' · promedio de 4 trimestres' : ''));
+          var h = PM.ttTitulo(PM.fecha(ANTERIOR(K[i])) + ' → ' + PM.fecha(K[i]), L.N(estado.ambito) + (estado.suave === '4t' ? T(' · promedio de 4 trimestres', ' · four-quarter average') : ''));
           ps.forEach(function (p) {
             if (p.value == null) return;
             var c = med().series.filter(function (q) { return q.nombre === p.seriesName; })[0];
@@ -135,19 +135,33 @@
       document.getElementById('panel-fecha').textContent = PM.fecha(ANTERIOR(k)) + ' → ' + PM.fecha(k);
       var html = med().series.map(function (s) {
         var v = S(s.k)[i], n = D.n[estado.ambito][s.k][i];
-        return v == null ? '' : PM.pb(s.color, s.largo, PM.pct(v, 1), n ? 'Base: ' + PM.num(n, 0) + ' personas encuestadas en el trimestre de origen' : null);
+        return v == null ? '' : PM.pb(s.color, s.largo, PM.pct(v, 1), n ? T('Base: ' + PM.num(n, 0) + ' personas encuestadas en el trimestre de origen', 'Base: ' + PM.num(n, 0) + ' people surveyed in the quarter of origin') : null);
       }).join('');
       var sep = S('separacion')[i], hal = S('hallazgo')[i], inf = S('informalizacion')[i], fo = S('formalizacion')[i], t;
-      if (sep == null) t = 'Sin dato: la encuesta no enlaza a las mismas personas en este tramo (2020 sin área rural).';
-      else t = 'De cada 100 ocupados urbanos, <strong>' + PM.num(sep, 1) + '</strong> están desocupados un trimestre después, y de cada 100 desocupados, <strong>' + PM.num(hal, 0) + '</strong> consiguen empleo. ' +
-        'Por cada 100 ocupados formales, ' + PM.num(inf, 1) + ' pasan a un empleo informal; por cada 100 informales, sólo ' + PM.num(fo, 1) + ' pasan a uno formal: el empleo formal se pierde más rápido de lo que se gana.';
+      if (sep == null) t = T('Sin dato: la encuesta no enlaza a las mismas personas en este tramo.', 'No data: the survey does not link the same people over this interval.');
+      else t = T('De cada 100 ocupados urbanos, <strong>' + PM.num(sep, 1) + '</strong> están desocupados un trimestre después, y de cada 100 desocupados, <strong>' + PM.num(hal, 0) + '</strong> consiguen empleo. ' +
+        'Por cada 100 ocupados formales, ' + PM.num(inf, 1) + ' pasan a un empleo informal; por cada 100 informales, ' + (fo < inf ? 'sólo ' : '') + PM.num(fo, 1) + ' pasan a uno formal' +
+        (inf == null || fo == null || Math.abs(inf - fo) < 0.05 ? '.' : inf > fo ? ': un empleo formal se vuelve informal con más frecuencia de la que uno informal se formaliza.'
+          : ': un empleo informal se formaliza con más frecuencia de la que uno formal se vuelve informal.'),
+        'Out of every 100 employed people in urban areas, <strong>' + PM.num(sep, 1) + '</strong> are unemployed one quarter later, and out of every 100 unemployed people, <strong>' + PM.num(hal, 0) + '</strong> find a job. ' +
+        'For every 100 people in formal employment, ' + PM.num(inf, 1) + ' move to an informal job; for every 100 in informal employment, ' + (fo < inf ? 'only ' : '') + PM.num(fo, 1) + ' move to a formal one' +
+        (inf == null || fo == null || Math.abs(inf - fo) < 0.05 ? '.' : inf > fo ? ': a formal job turns informal more often than an informal one becomes formal.'
+          : ': an informal job becomes formal more often than a formal one turns informal.'));
       document.getElementById('panel').innerHTML = html + PM.ctx(t);
     }
     var PREGUNTAS = [
-      ['¿Cómo se miden los flujos?', 'La ECE visita a cada hogar durante cuatro trimestres seguidos. Eso permite enlazar a la misma persona (mismo identificador de panel, mismo sexo y edad coherente) en dos trimestres consecutivos y ver cómo cambió su situación: unas 21.000 personas de 14 años o más por cada par de trimestres. <strong>Sólo área urbana:</strong> la muestra rural de la ECE no tiene panel (sus viviendas se visitan una sola vez), así que no se puede seguir a nadie en el campo.'],
-      ['¿Qué significa «de cada 100»?', 'Es una probabilidad de transición: de las personas que estaban en una situación (ocupadas, desocupadas, inactivas, con empleo formal o informal) en un trimestre, qué porcentaje está en otra situación el trimestre siguiente. No son cantidades de personas.'],
-      ['¿Por qué el promedio de 4 trimestres?', 'Cada tramo trimestral se calcula con una submuestra y tiene variación estacional (las cosechas, las fiestas de fin de año). El promedio de los últimos cuatro tramos deja ver la tendencia.'],
-      ['¿Qué tan precisos son?', 'Se usan los factores de expansión del trimestre de origen (la ECE no publica factores longitudinales). Sirven para comparar en el tiempo y entre ámbitos; las cifras de un solo tramo pueden moverse por el muestreo, sobre todo en el área rural y en los flujos chicos (formal ↔ informal).']
+      [T('¿Cómo se miden los flujos?', 'How are flows measured?'), T(
+        'La ECE visita a cada hogar durante cuatro trimestres seguidos. Eso permite enlazar a la misma persona (mismo identificador de panel, mismo sexo y edad coherente) en dos trimestres consecutivos y ver cómo cambió su situación: unas 21.000 personas de 14 años o más por cada par de trimestres. <strong>Sólo área urbana:</strong> la muestra rural de la ECE no tiene panel (sus viviendas se visitan una sola vez), así que no se puede seguir a nadie en el campo.',
+        'The ECE visits each household for four consecutive quarters. This makes it possible to link the same person (same panel identifier, same sex and a consistent age) across two consecutive quarters and see how their situation changed: about 21,000 people aged 14 or older for each pair of quarters. <strong>Urban areas only:</strong> the ECE rural sample has no panel (its dwellings are visited only once), so no one can be followed in the countryside.')],
+      [T('¿Qué significa «de cada 100»?', 'What does “out of every 100” mean?'), T(
+        'Es una probabilidad de transición: de las personas que estaban en una situación (ocupadas, desocupadas, inactivas, con empleo formal o informal) en un trimestre, qué porcentaje está en otra situación el trimestre siguiente. No son cantidades de personas.',
+        'It is a transition probability: of the people who were in one situation (employed, unemployed, inactive, in formal or informal employment) in one quarter, what percentage is in another situation the next quarter. These are not numbers of people.')],
+      [T('¿Por qué el promedio de 4 trimestres?', 'Why the four-quarter average?'), T(
+        'Cada tramo trimestral se calcula con una submuestra y tiene variación estacional (las cosechas, las fiestas de fin de año). El promedio de los últimos cuatro tramos deja ver la tendencia.',
+        'Each quarter-to-quarter interval is calculated from a subsample and has seasonal variation (harvests, the year-end holidays). The average of the last four intervals brings out the trend.')],
+      [T('¿Qué tan precisos son?', 'How precise are they?'), T(
+        'Se usan los factores de expansión del trimestre de origen (la ECE no publica factores longitudinales). Sirven para comparar en el tiempo y entre ámbitos; las cifras de un solo tramo pueden moverse por el muestreo, sobre todo en el resto urbano, que tiene la muestra más chica, y en los flujos chicos (formal ↔ informal).',
+        'The survey weights of the quarter of origin are used (the ECE does not publish longitudinal weights). They are useful for comparisons over time and across areas; figures for a single interval can move because of sampling, especially in the rest of urban areas, which has the smallest sample, and in small flows (formal ↔ informal).')]
     ];
   })();
   </script>

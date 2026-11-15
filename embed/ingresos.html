@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ingresos laborales · Populi</title>
+  <title data-en="Labor income · Populi">Ingresos laborales · Populi</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -16,15 +16,15 @@
 <body>
   <div class="wrap">
     <div class="sec-hd">
-      <div class="sec-title"><span class="accent-bar"></span>Ingresos laborales</div>
-      <div class="sec-sub" id="sub">Ingreso mensual de la ocupación principal, mediana en bolivianos del 1.er trimestre de 2026 (descontada la inflación)</div>
+      <div class="sec-title" data-en='<span class="accent-bar"></span>Labor income'><span class="accent-bar"></span>Ingresos laborales</div>
+      <div class="sec-sub" id="sub" data-en="Monthly income from the main job, median adjusted for inflation">Ingreso mensual de la ocupación principal, mediana descontada la inflación</div>
     </div>
 
     <div class="hz-bar">
-      <div class="hz-item"><span class="hz-lbl">Medida</span><div class="hz-grp" id="b-medida"></div></div>
-      <div class="hz-item" id="it-comparar"><span class="hz-lbl">Comparar</span><div class="hz-grp" id="b-comparar"></div></div>
-      <div class="hz-item"><span class="hz-lbl">Ámbito</span><div class="hz-grp" id="b-ambito"></div></div>
-      <div class="hz-item"><span class="hz-lbl">Rango</span><div class="hz-grp" id="b-rango"></div></div>
+      <div class="hz-item"><span class="hz-lbl" data-en="Measure">Medida</span><div class="hz-grp" id="b-medida"></div></div>
+      <div class="hz-item" id="it-comparar"><span class="hz-lbl" data-en="Compare">Comparar</span><div class="hz-grp" id="b-comparar"></div></div>
+      <div class="hz-item"><span class="hz-lbl" data-en="Area">Ámbito</span><div class="hz-grp" id="b-ambito"></div></div>
+      <div class="hz-item"><span class="hz-lbl" data-en="Range">Rango</span><div class="hz-grp" id="b-rango"></div></div>
     </div>
 
     <div class="kpi-grid" id="kpis"></div>
@@ -32,10 +32,10 @@
     <div class="main-grid">
       <div class="chart-card">
         <div class="chart-ctrl"><div class="tog-grp" id="pastillas"></div></div>
-        <div class="grafico" id="chart"><div class="loading"><div class="spinner"></div><span>Cargando los ingresos…</span></div></div>
+        <div class="grafico" id="chart"><div class="loading"><div class="spinner"></div><span data-en="Loading labor income…">Cargando los ingresos…</span></div></div>
       </div>
       <div class="panel">
-        <div class="panel-hd"><span class="panel-hd-t">Lectura del indicador</span><span class="panel-hd-d" id="panel-fecha"></span></div>
+        <div class="panel-hd"><span class="panel-hd-t" data-en="Reading the indicator">Lectura del indicador</span><span class="panel-hd-d" id="panel-fecha"></span></div>
         <div class="panel-body" id="panel"></div>
       </div>
     </div>
@@ -46,19 +46,19 @@
 
   <script>
   (function () {
-    var C = PM.C;
-    var SUB = { ingreso: 'Ingreso mensual de la ocupación principal, mediana en bolivianos del 1.er trimestre de 2026 (descontada la inflación)',
-      minimo: 'Porcentaje de los ocupados con ingreso que gana menos que el salario mínimo nacional de cada año' };
+    var C = PM.C, T = PM.t;
+    var SUB = { ingreso: '',   // se arma al cargar, con la base de los ingresos de los datos (L.base)
+      minimo: T('Porcentaje de los ocupados con ingreso que gana menos que el salario mínimo nacional de cada año', 'Percent of employed people with income who earn less than the national minimum wage of each year') };
     var GRUPOS = {
-      total: [{ k: 'ylab_med', nombre: 'Ingreso mediano', largo: 'Ingreso mediano', color: C.oro, ancho: 2.5 }],
-      sexo: [{ k: 'ylab_med_hombres', nombre: 'Hombres', largo: 'Hombres (mediana)', color: { claro: C.petroleo, oscuro: C.menta }, ancho: 2 },
-        { k: 'ylab_med_mujeres', nombre: 'Mujeres', largo: 'Mujeres (mediana)', color: C.rojo, ancho: 2 }],
-      formalidad: [{ k: 'ylab_med_formal', nombre: 'Empleo formal', largo: 'Empleo formal (mediana)', color: C.turquesa, ancho: 2 },
-        { k: 'ylab_med_informal', nombre: 'Empleo informal', largo: 'Empleo informal (mediana)', color: C.rojo, ancho: 2 }],
-      categoria: [{ k: 'ylab_med_asal', nombre: 'Asalariados', largo: 'Obreros y empleados (mediana)', color: C.turquesa, ancho: 2 },
-        { k: 'ylab_med_cp', nombre: 'Cuenta propia', largo: 'Cuenta propia (mediana)', color: C.oro, ancho: 2 }],
-      minimo: [{ k: 'bajo_smn', nombre: 'Ocupados bajo el mínimo', largo: 'Ocupados con ingreso menor al salario mínimo', color: C.rojo, ancho: 2.5 },
-        { k: 'asal_bajo_smn', nombre: 'Asalariados bajo el mínimo', largo: 'Asalariados con ingreso menor al salario mínimo', color: C.oro, ancho: 2 }]
+      total: [{ k: 'ylab_med', nombre: T('Ingreso mediano', 'Median income'), largo: T('Ingreso mediano', 'Median income'), color: C.oro, ancho: 2.5 }],
+      sexo: [{ k: 'ylab_med_hombres', nombre: T('Hombres', 'Men'), largo: T('Hombres (mediana)', 'Men (median)'), color: { claro: C.petroleo, oscuro: C.menta }, ancho: 2 },
+        { k: 'ylab_med_mujeres', nombre: T('Mujeres', 'Women'), largo: T('Mujeres (mediana)', 'Women (median)'), color: C.rojo, ancho: 2 }],
+      formalidad: [{ k: 'ylab_med_formal', nombre: T('Empleo formal', 'Formal employment'), largo: T('Empleo formal (mediana)', 'Formal employment (median)'), color: C.turquesa, ancho: 2 },
+        { k: 'ylab_med_informal', nombre: T('Empleo informal', 'Informal employment'), largo: T('Empleo informal (mediana)', 'Informal employment (median)'), color: C.rojo, ancho: 2 }],
+      categoria: [{ k: 'ylab_med_asal', nombre: T('Asalariados', 'Wage employees'), largo: T('Obreros y empleados (mediana)', 'Blue- and white-collar employees (median)'), color: C.turquesa, ancho: 2 },
+        { k: 'ylab_med_cp', nombre: T('Cuenta propia', 'Own-account workers'), largo: T('Cuenta propia (mediana)', 'Own-account workers (median)'), color: C.oro, ancho: 2 }],
+      minimo: [{ k: 'bajo_smn', nombre: T('Ocupados bajo el mínimo', 'Employed below the minimum'), largo: T('Ocupados con ingreso menor al salario mínimo', 'Employed with income below the minimum wage'), color: C.rojo, ancho: 2.5 },
+        { k: 'asal_bajo_smn', nombre: T('Asalariados bajo el mínimo', 'Wage employees below the minimum'), largo: T('Asalariados con ingreso menor al salario mínimo', 'Wage employees with income below the minimum wage'), color: C.oro, ancho: 2 }]
     };
     var estado = { medida: 'ingreso', comparar: 'total', ambito: 'Bolivia', rango: 'todo', idx: null };
     var activas = {};
@@ -70,14 +70,16 @@
 
     PM.cargar(['trimestral.json']).then(function (r) {
       D = r[0]; M = D.metadata;
+      SUB.ingreso = T('Ingreso mensual de la ocupación principal, mediana en ' + L.base(M).largo + ' (descontada la inflación)', 'Monthly income from the main job, median in ' + L.base(M).largo + ' (adjusted for inflation)');
+      document.getElementById('sub').textContent = SUB[estado.medida];
       K = D.periodos.slice(0, D.periodos.indexOf(M.ultimo_microdato) + 1);   // los ingresos llegan sólo con el microdato
       estado.idx = K.length - 1;
-      PM.botonera(document.getElementById('b-medida'), [['ingreso', 'Ingreso real'], ['minimo', 'Bajo el mínimo']], estado.medida, function (v) {
+      PM.botonera(document.getElementById('b-medida'), [['ingreso', T('Ingreso real', 'Real income')], ['minimo', T('Bajo el mínimo', 'Below the minimum')]], estado.medida, function (v) {
         estado.medida = v; document.getElementById('sub').textContent = SUB[v];
         document.getElementById('it-comparar').style.display = v === 'minimo' ? 'none' : ''; pastillas(); grafico.redibujar(); panel(estado.idx); });
-      PM.botonera(document.getElementById('b-comparar'), [['total', 'Total'], ['sexo', 'Sexo'], ['formalidad', 'Formalidad'], ['categoria', 'Categoría']], estado.comparar,
+      PM.botonera(document.getElementById('b-comparar'), [['total', 'Total'], ['sexo', T('Sexo', 'Sex')], ['formalidad', T('Formalidad', 'Formality')], ['categoria', T('Categoría', 'Status')]], estado.comparar,
         function (v) { estado.comparar = v; pastillas(); grafico.redibujar(); panel(estado.idx); });
-      L.selector(document.getElementById('b-ambito'), L.AMBITOS_SEL, estado.ambito, function (v) { estado.ambito = v; cifras(); grafico.redibujar(); panel(estado.idx); }, 'Ámbito');
+      L.selector(document.getElementById('b-ambito'), L.AMBITOS_SEL, estado.ambito, function (v) { estado.ambito = v; cifras(); grafico.redibujar(); panel(estado.idx); }, T('Ámbito', 'Area'));
       PM.botonera(document.getElementById('b-rango'), L.RANGOS, estado.rango, function (v) { estado.rango = v; grafico.redibujar(); });
       pastillas(); cifras();
       var el = document.getElementById('chart'); el.innerHTML = '';
@@ -85,8 +87,8 @@
       grafico.chart.on('click', function (p) { if (p.dataIndex != null) panel(si + p.dataIndex); });
       panel(estado.idx);
       PM.alCambiarTema(function () { cifras(); panel(estado.idx); });
-      PM.preguntas(document.getElementById('preguntas'), PREGUNTAS);
-      document.getElementById('fuente').innerHTML = L.fuente({}, PM.fecha(M.ultimo_microdato)) + ' · IPC: INE' + L.notaEst(D).replace('para Bolivia y el área rural', 'del ingreso rural');
+      PM.preguntas(document.getElementById('preguntas'), preguntas());
+      document.getElementById('fuente').innerHTML = L.fuente({}, PM.fecha(M.ultimo_microdato)) + T(' · IPC: INE', ' · CPI: INE') + L.notaEst(D);
     }).catch(function (e) { console.error(e); PM.error(document.getElementById('chart')); });
 
     function pastillas() {
@@ -101,13 +103,13 @@
       var h = S('ylab_med_hombres')[u], m = S('ylab_med_mujeres')[u];
       var b = S('bajo_smn'), db = a >= 0 && b[a] != null ? b[u] - b[a] : null;
       document.getElementById('kpis').innerHTML =
-        PM.kpi({ color: C.oro, rotulo: 'Ingreso mediano · ' + PM.fecha(K[u]), valor: L.bs(y[u]), delta: d == null ? '' : PM.flecha(d, 0.5) + ' ' + PM.pct(d, 1, true) + ' real en un año', tono: tono(d),
+        PM.kpi({ color: C.oro, rotulo: T('Ingreso mediano · ', 'Median income · ') + PM.fecha(K[u]), valor: L.bs(y[u]), delta: d == null ? '' : PM.flecha(d, 0.5) + ' ' + PM.pct(d, 1, true) + T(' real en un año', ' real in a year'), tono: tono(d),
           serie: PM.ultimos(y.filter(function (v) { return v != null; }), 16) }) +
-        PM.kpi({ color: C.turquesa, rotulo: 'Ingreso por hora', valor: yh[u] == null ? '—' : 'Bs ' + PM.num(yh[u], 1), delta: dh == null ? '' : PM.flecha(dh, 0.5) + ' ' + PM.pct(dh, 1, true) + ' real en un año', tono: tono(dh),
+        PM.kpi({ color: C.turquesa, rotulo: T('Ingreso por hora', 'Hourly earnings'), valor: yh[u] == null ? '—' : 'Bs ' + PM.num(yh[u], 1), delta: dh == null ? '' : PM.flecha(dh, 0.5) + ' ' + PM.pct(dh, 1, true) + T(' real en un año', ' real in a year'), tono: tono(dh),
           serie: PM.ultimos(yh.filter(function (v) { return v != null; }), 16) }) +
-        PM.kpi({ color: C.rojo, rotulo: 'Mujeres / hombres', valor: h && m ? PM.pct(100 * m / h, 0) : '—', delta: 'ingreso mediano de las mujeres sobre el de los hombres', tono: 'neutro',
+        PM.kpi({ color: C.rojo, rotulo: T('Mujeres / hombres', 'Women / men'), valor: h && m ? PM.pct(100 * m / h, 0) : '—', delta: T('ingreso mediano de las mujeres sobre el de los hombres', 'women\'s median income relative to men\'s'), tono: 'neutro',
           serie: PM.ultimos(S('ylab_med_mujeres').map(function (v, i) { var hh = S('ylab_med_hombres')[i]; return v && hh ? 100 * v / hh : null; }).filter(function (v) { return v != null; }), 16) }) +
-        PM.kpi({ color: C.granate, rotulo: 'Bajo el salario mínimo', valor: PM.pct(b[u], 1), delta: db == null ? '' : PM.flecha(db, 0.05) + ' ' + PM.pp(db) + ' en un año',
+        PM.kpi({ color: C.granate, rotulo: T('Bajo el salario mínimo', 'Below the minimum wage'), valor: PM.pct(b[u], 1), delta: db == null ? '' : PM.flecha(db, 0.05) + ' ' + PM.pp(db) + T(' en un año', ' in a year'),
           tono: db == null || Math.abs(db) < 0.05 ? 'neutro' : db < 0 ? 'bueno' : 'malo', serie: PM.ultimos(b.filter(function (v) { return v != null; }), 16) });
     }
 
@@ -130,7 +132,7 @@
         tooltip: PM.tooltip(function (ps) {
           if (!ps.length) return '';
           var i = ps[0].dataIndex; panel(si + i);
-          var h = PM.ttTitulo(PM.fecha(KV[i]) + (L.hayEst(D, estado.ambito, KV[i]) ? ' · estimado' : ''), estado.ambito + (pct ? '' : ' · Bs del 1T-2026'));
+          var h = PM.ttTitulo(PM.fecha(KV[i]) + (L.hayEst(D, estado.ambito, KV[i]) ? T(' · estimado', ' · estimated') : ''), L.N(estado.ambito) + (pct ? '' : ' · ' + L.base(M).corto));
           ps.forEach(function (p) {
             if (p.value == null || /^_/.test(p.seriesName)) return;
             var c = GRUPOS[grupo()].filter(function (q) { return q.nombre === p.seriesName; })[0];
@@ -149,33 +151,53 @@
       estado.idx = i;
       var k = K[i], esEst = L.est(D, estado.ambito, 'ylab_med', k);
       var v = function (x) { return L.valor(D, estado.ambito, x, K, i).v; };
-      document.getElementById('panel-fecha').textContent = PM.fecha(k) + (esEst ? ' · estimado' : '');
+      document.getElementById('panel-fecha').textContent = PM.fecha(k) + (esEst ? T(' · estimado', ' · estimated') : '');
       var filas = GRUPOS[grupo()].filter(function (s) { return v(s.k) != null; }).map(function (s) {
         return PM.pb(s.color, s.largo, grupo() === 'minimo' ? PM.pct(v(s.k), 1) : L.bs(v(s.k)), null); }).join('');
       var y = v('ylab_med'), txt;
-      if (esEst) txt = 'Entre abril y diciembre de 2020 el INE no levantó la encuesta en el área rural: el ingreso mediano de <strong>' + L.bs(y) +
+      if (esEst) txt = T('Entre abril y diciembre de 2020 el INE no levantó la encuesta en el área rural: el ingreso mediano de <strong>' + L.bs(y) +
         '</strong> es una <strong>estimación POPULI</strong> (intervalo de 95 %: ' + L.bs(esEst.li) + ' a ' + L.bs(esEst.ls) + ')' +
-        (estado.ambito === 'Rural' ? ', con ' + L.METODO : ': la mediana del área rural, estimada con ' + L.METODO + ', se mezcla con la distribución de los ingresos urbanos observados') + '. <a href="' + M.estimados.metodologia + '" target="_blank" rel="noopener">Ver metodología</a>.';
-      else if (y == null) txt = 'Sin dato para ' + estado.ambito + ' en este trimestre.';
+        (estado.ambito === 'Rural' ? ', con ' + L.METODO : ': la mediana del área rural, estimada con ' + L.METODO + ', se mezcla con la distribución de los ingresos urbanos observados') + '. <a href="' + M.estimados.metodologia + '" target="_blank" rel="noopener">Ver metodología</a>.',
+        'Between April and December 2020 INE did not run the survey in rural areas: the median income of <strong>' + L.bs(y) +
+        '</strong> is a <strong>POPULI estimate</strong> (95% interval: ' + L.bs(esEst.li) + ' to ' + L.bs(esEst.ls) + ')' +
+        (estado.ambito === 'Rural' ? ', using ' + L.METODO : ': the rural median, estimated using ' + L.METODO + ', is blended with the distribution of observed urban incomes') + '. <a href="' + L.metodologia(M.estimados.metodologia) + '" target="_blank" rel="noopener">See methodology</a>.');
+      else if (y == null) txt = T('Sin dato para ' + L.lugar(estado.ambito) + ' en este trimestre.', 'No data for ' + L.lugar(estado.ambito) + ' in this quarter.');
       else {
         var a = L.haceUnAnio(K, i), d = a >= 0 ? cambio(y, S('ylab_med')[a]) : null;
         var b19 = ['2019-T1', '2019-T2', '2019-T3', '2019-T4'].map(function (q) { return S('ylab_med')[K.indexOf(q)]; }).filter(function (x) { return x != null; });
         var p19 = b19.length ? b19.reduce(function (s, x) { return s + x; }, 0) / b19.length : null, d19 = cambio(y, p19);
-        txt = 'La mitad de los ocupados de ' + estado.ambito + ' gana menos de <strong>' + L.bs(y) + '</strong> al mes (en bolivianos de hoy).';
-        if (d != null) txt += ' En un año, el ingreso mediano real ' + (Math.abs(d) < 0.5 ? 'casi no cambia' : (d < 0 ? 'cae ' : 'sube ') + PM.pct(Math.abs(d), 1)) + '.';
-        if (d19 != null && K[i] > '2019-T4') txt += ' Frente al promedio de 2019 está <strong>' + PM.pct(Math.abs(d19), 0) + (d19 < 0 ? ' abajo' : ' arriba') + '</strong>.';
-        if (v('bajo_smn') != null) txt += ' <strong>' + PM.pct(v('bajo_smn'), 0) + '</strong> de los ocupados gana menos que el salario mínimo.';
+        txt = T('La mitad de los ocupados ' + L.de(estado.ambito) + ' gana menos de <strong>' + L.bs(y) + '</strong> al mes (en bolivianos de hoy).',
+          'Half of the employed in ' + L.lugar(estado.ambito) + ' earn less than <strong>' + L.bs(y) + '</strong> a month (in today\'s bolivianos).');
+        if (d != null) txt += T(' En un año, el ingreso mediano real ' + (Math.abs(d) < 0.5 ? 'casi no cambia' : (d < 0 ? 'cae ' : 'sube ') + PM.pct(Math.abs(d), 1)) + '.',
+          ' In a year, real median income ' + (Math.abs(d) < 0.5 ? 'is almost unchanged' : (d < 0 ? 'is down ' : 'is up ') + PM.pct(Math.abs(d), 1)) + '.');
+        if (d19 != null && K[i] > '2019-T4') txt += T(' Frente al promedio de 2019 está <strong>' + PM.pct(Math.abs(d19), 0) + (d19 < 0 ? ' abajo' : ' arriba') + '</strong>.',
+          ' Compared with the 2019 average it is <strong>' + PM.pct(Math.abs(d19), 0) + (d19 < 0 ? ' lower' : ' higher') + '</strong>.');
+        if (v('bajo_smn') != null) txt += T(' <strong>' + PM.pct(v('bajo_smn'), 0) + '</strong> de los ocupados gana menos que el salario mínimo.',
+          ' <strong>' + PM.pct(v('bajo_smn'), 0) + '</strong> of the employed earn less than the minimum wage.');
       }
       document.getElementById('panel').innerHTML = filas + PM.ctx(txt);
     }
 
-    var PREGUNTAS = [
-      ['¿Qué ingreso se mide?', 'El ingreso laboral mensual de la <strong>ocupación principal</strong> que calcula el INE (salario líquido más pagos extras para los asalariados; ganancia neta para los independientes), de las personas ocupadas que declaran un ingreso positivo. Los familiares sin remuneración no entran (no tienen ingreso). No se usa el ingreso de la ocupación secundaria: la ECE dejó de preguntarlo después de 2018.'],
-      ['¿Por qué la mediana?', 'La mediana es el ingreso de la persona del medio: la mitad gana menos y la mitad gana más. No la mueven unos pocos ingresos muy altos, como al promedio, y es más estable entre trimestres.'],
-      ['¿Cómo se descuenta la inflación?', 'Cada ingreso se lleva a <strong>bolivianos del 1.er trimestre de 2026</strong> con el Índice de Precios al Consumidor del INE (serie empalmada, base 2016) del mes en que se hizo la entrevista. Así, una caída de la línea es pérdida de poder de compra, aunque el monto nominal suba.'],
-      ['¿Qué es estar bajo el salario mínimo?', 'Ganar menos que el salario mínimo nacional del año (Bs 2.750 en 2025; Bs 3.300 desde enero de 2026, DS 5516). El mínimo rige para los asalariados, pero compararlo con todos los ocupados muestra cuántos ingresos laborales quedan por debajo del piso legal. El salto de 2026 refleja también la suba del mínimo.'],
-      ['¿Por qué no hay datos de los últimos trimestres?', 'Los ingresos sólo se pueden calcular con el microdato de la ECE, que el INE publica con unos meses de rezago. El monitor se actualiza cuando sale cada trimestre.']
+    function preguntas() {   // se arma al cargar: lleva cifras de los datos
+      var B = L.base(M);
+      return [
+      [T('¿Qué ingreso se mide?', 'Which income is measured?'), T(
+        'El ingreso laboral mensual de la <strong>ocupación principal</strong> que calcula el INE (salario líquido más pagos extras para los asalariados; ganancia neta para los independientes), de las personas ocupadas que declaran un ingreso positivo. Los familiares sin remuneración no entran (no tienen ingreso). No se usa el ingreso de la ocupación secundaria: la ECE dejó de preguntarlo después de 2018.',
+        'The monthly labor income from the <strong>main job</strong> as calculated by INE (take-home pay plus extra payments for wage employees; net earnings for the self-employed), for employed people who report a positive income. Unpaid family workers are not included (they have no income). Income from secondary jobs is not used: the ECE stopped asking about it after 2018.')],
+      [T('¿Por qué la mediana?', 'Why the median?'), T(
+        'La mediana es el ingreso de la persona del medio: la mitad gana menos y la mitad gana más. No la mueven unos pocos ingresos muy altos, como al promedio, y es más estable entre trimestres.',
+        'The median is the income of the person in the middle: half earn less and half earn more. Unlike the average, it is not moved by a few very high incomes, and it is more stable from quarter to quarter.')],
+      [T('¿Cómo se descuenta la inflación?', 'How is inflation taken out?'), T(
+        'Cada ingreso se lleva a <strong>' + B.largo + '</strong> con el Índice de Precios al Consumidor del INE (serie empalmada, base 2016) del mes en que se hizo la entrevista. Así, una caída de la línea es pérdida de poder de compra, aunque el monto nominal suba.',
+        'Each income is converted to <strong>' + B.largo + '</strong> with INE\'s Consumer Price Index (spliced series, base 2016) for the month in which the interview took place. So a drop in the line is a loss of purchasing power, even if the nominal amount rises.')],
+      [T('¿Qué es estar bajo el salario mínimo?', 'What does being below the minimum wage mean?'), T(
+        'Ganar menos que el salario mínimo nacional del año (Bs 2.750 en 2025; Bs 3.300 desde enero de 2026, DS 5516). El mínimo rige para los asalariados, pero compararlo con todos los ocupados muestra cuántos ingresos laborales quedan por debajo del piso legal. El salto de 2026 refleja también la suba del mínimo.',
+        'Earning less than the national minimum wage for the year (Bs 2,750 in 2025; Bs 3,300 since January 2026, Supreme Decree 5516). The minimum applies to wage employees, but comparing it with all the employed shows how many labor incomes fall below the legal floor. The jump in 2026 also reflects the increase in the minimum.')],
+      [T('¿Por qué no hay datos de los últimos trimestres?', 'Why is there no data for the latest quarters?'), T(
+        'Los ingresos sólo se pueden calcular con el microdato de la ECE, que el INE publica con unos meses de rezago. El monitor se actualiza cuando sale cada trimestre.',
+        'Income can only be calculated from the ECE microdata, which INE releases with a lag of a few months. The monitor is updated as each quarter comes out.')]
     ];
+    }
   })();
   </script>
 </body>

@@ -4,6 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Metodología · Monitor Laboral · Populi</title>
+  <script>
+    // ?lang=en → inglés: cada texto va en pares lang="es" / lang="en" y el CSS oculta el otro idioma
+    if ((new URLSearchParams(location.search).get('lang') || '').toLowerCase() === 'en') {
+      document.documentElement.lang = 'en';
+      document.title = 'Methodology · Labor Market Monitor · Populi';
+    }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -39,55 +46,104 @@
     #t-met thead th{white-space:normal;vertical-align:bottom}
     .refs li{font-size:.84rem}
     .pie{text-align:center;padding:28px 16px;font-size:.8rem;color:var(--muted);border-top:1px solid var(--border)}
+    html[lang="es"] [lang="en"]{display:none} html[lang="en"] [lang="es"]{display:none}
   </style>
 </head>
 <body>
   <div class="hero">
+    <div lang="es">
     <h1>Metodología del Monitor Laboral</h1>
     <p>Cómo se calculan los indicadores a partir del microdato de la Encuesta Continua de Empleo del INE, qué tan precisos son y cómo se estimaron los trimestres sin encuesta rural de 2020. <a href="index.html">Volver al monitor</a></p>
+    </div>
+    <div lang="en">
+    <h1>Labor Market Monitor Methodology</h1>
+    <p>How the indicators are calculated from the microdata of INE's Continuous Employment Survey, how precise they are, and how the 2020 quarters without a rural survey were estimated. <a href="index.html?lang=en">Back to the monitor</a></p>
+    </div>
   </div>
   <main>
     <nav class="ind">
-      <a href="#fuente">Fuente</a><a href="#calculo">Cálculo y validación</a><a href="#informalidad">Informalidad</a>
-      <a href="#precision">Precisión</a><a href="#ingresos">Ingresos</a><a href="#flujos">Flujos</a><a href="#hueco-2020">2020 sin encuesta rural</a><a href="#referencias">Referencias</a>
+      <a href="#fuente"><span lang="es">Fuente</span><span lang="en">Source</span></a><a href="#calculo"><span lang="es">Cálculo y validación</span><span lang="en">Calculation and validation</span></a><a href="#informalidad"><span lang="es">Informalidad</span><span lang="en">Informality</span></a>
+      <a href="#precision"><span lang="es">Precisión</span><span lang="en">Precision</span></a><a href="#ingresos"><span lang="es">Ingresos</span><span lang="en">Income</span></a><a href="#flujos"><span lang="es">Flujos</span><span lang="en">Flows</span></a><a href="#hueco-2020"><span lang="es">2020 sin encuesta rural</span><span lang="en">2020 without a rural survey</span></a><a href="#referencias"><span lang="es">Referencias</span><span lang="en">References</span></a>
     </nav>
 
     <section id="fuente">
+      <div lang="es">
       <h2>Fuente</h2>
       <p>Todos los indicadores salen del <strong>microdato público</strong> de la Encuesta Continua de Empleo (ECE) del Instituto Nacional de Estadística (INE), desde el <span class="num" data-m="ece.primero"></span> hasta el <span class="num" data-m="ece.ultimo_microdato"></span> (<span class="num" data-m="ece.trimestres"></span> trimestres). Para los trimestres más recientes, que todavía no tienen microdato, el monitor muestra las tasas de los <strong>cuadros preliminares del INE</strong> (marcadas «p»), hasta el <span class="num" data-m="ece.ultimo_dato"></span>.</p>
       <p>La ECE entrevista unas 17.800 viviendas por trimestre, en las áreas urbana y rural de los nueve departamentos. En el área urbana cada vivienda se visita cuatro trimestres seguidos (panel rotativo); en el área rural, una sola vez. Los factores de expansión son los del INE, ajustados a las Estimaciones y Proyecciones de Población (revisión 2025).</p>
+      </div>
+      <div lang="en">
+      <h2>Source</h2>
+      <p>All indicators come from the <strong>public microdata</strong> of the Continuous Employment Survey (ECE) of the National Institute of Statistics (INE), from <span class="num" data-m="ece.primero"></span> to <span class="num" data-m="ece.ultimo_microdato"></span> (<span class="num" data-m="ece.trimestres"></span> quarters). For the most recent quarters, which do not yet have microdata, the monitor shows the rates from <strong>INE's preliminary tables</strong> (marked “p”), through <span class="num" data-m="ece.ultimo_dato"></span>.</p>
+      <p>The ECE interviews about 17,800 dwellings per quarter, in the urban and rural areas of the nine departments. In urban areas each dwelling is visited in four consecutive quarters (rotating panel); in rural areas, only once. The expansion factors are INE's, adjusted to the Population Estimates and Projections (2025 revision).</p>
+      </div>
     </section>
 
     <section id="calculo">
+      <div lang="es">
       <h2>Cálculo y validación con las cifras oficiales</h2>
       <p>Las tasas siguen las definiciones de la OIT que aplica el INE (población en edad de trabajar: 14 años o más) y su propia sintaxis de cálculo: participación, ocupación, desocupación, subocupación por insuficiencia de horas y carga económica. La subutilización amplia (LU3 y LU4) sigue la 19.ª Conferencia Internacional de Estadísticos del Trabajo.</p>
       <div class="caja">Recalculadas desde el microdato, las tasas coinciden con <span class="num" data-m="validacion_ine.cuadros"></span> cuadros oficiales del INE en <span class="num" data-m="validacion_ine.comparaciones" data-fmt="miles"></span> comparaciones: <span class="num" data-m="validacion_ine.exactas_pct" data-fmt="pct"></span> son idénticas al centésimo (diferencia máxima: <span class="num" data-m="validacion_ine.dif_max" data-fmt="dec3"></span> puntos).</div>
       <p>Una salvedad: en el cuadro oficial de Bolivia por trimestre, la tasa global de participación de 2016 al primer trimestre de 2020 aparece corrida un trimestre (cada valor corresponde al trimestre anterior y no cuadra con las tasas de ocupación del mismo cuadro). El monitor muestra la serie coherente con el microdato.</p>
+      </div>
+      <div lang="en">
+      <h2>Calculation and validation against official figures</h2>
+      <p>The rates follow the ILO definitions that INE applies (working-age population: 14 years and older) and INE's own calculation syntax: participation, employment, unemployment, time-related underemployment and economic dependency. Broad underutilization (LU3 and LU4) follows the 19th International Conference of Labour Statisticians.</p>
+      <div class="caja">Recalculated from the microdata, the rates match <span class="num" data-m="validacion_ine.cuadros"></span> official INE tables in <span class="num" data-m="validacion_ine.comparaciones" data-fmt="miles"></span> comparisons: <span class="num" data-m="validacion_ine.exactas_pct" data-fmt="pct"></span> are identical to the hundredth (maximum difference: <span class="num" data-m="validacion_ine.dif_max" data-fmt="dec3"></span> points).</div>
+      <p>One caveat: in the official quarterly table for Bolivia, the participation rate from 2016 to the first quarter of 2020 appears shifted by one quarter (each value corresponds to the previous quarter and does not match the employment-to-population ratios in the same table). The monitor shows the series consistent with the microdata.</p>
+      </div>
     </section>
 
     <section id="informalidad">
+      <div lang="es">
       <h2>Informalidad</h2>
       <p>Se sigue la propuesta metodológica del INE para medir la informalidad en Bolivia (basada en la 21.ª Conferencia Internacional de Estadísticos del Trabajo). La <strong>ocupación informal</strong> mira el puesto de trabajo: un asalariado es formal si aporta a la Gestora (antes AFP) o tiene seguro de salud por su trabajo; un independiente, si su negocio tiene NIT en el régimen general o lleva contabilidad. El <strong>sector informal</strong> mira la unidad económica (Estado, empresas públicas, ONG y organismos internacionales son formales; en el resto deciden el NIT, la contabilidad y el tamaño). La diferencia mediana con las cifras oficiales es de <span class="num" data-m="validacion_ine.informalidad_dif_mediana" data-fmt="dec2"></span> puntos.</p>
       <p>En el cuestionario corto de la pandemia (segundo trimestre de 2020 a fines de 2021) no se preguntó por el seguro de salud ni por la contabilidad; para esos trimestres se usa un criterio de respaldo calibrado contra el INE.</p>
+      </div>
+      <div lang="en">
+      <h2>Informality</h2>
+      <p>The measure follows INE's methodological proposal for measuring informality in Bolivia (based on the 21st International Conference of Labour Statisticians). <strong>Informal employment</strong> looks at the job: a wage employee is formal if they make pension contributions to the Gestora (formerly the AFPs) or have health insurance through their job; a self-employed worker is formal if their business has a tax ID (NIT) under the general regime or keeps accounts. The <strong>informal sector</strong> looks at the economic unit (the State, public enterprises, NGOs and international organizations are formal; for the rest, the NIT, bookkeeping and size decide). The median difference from the official figures is <span class="num" data-m="validacion_ine.informalidad_dif_mediana" data-fmt="dec2"></span> points.</p>
+      <p>The short pandemic questionnaire (second quarter of 2020 to the end of 2021) did not ask about health insurance or bookkeeping; for those quarters a fallback criterion calibrated against INE is used.</p>
+      </div>
     </section>
 
     <section id="precision">
+      <div lang="es">
       <h2>Precisión y publicación</h2>
       <p>Cada indicador lleva su <strong>error de muestreo</strong>, calculado con el diseño de la encuesta (estratos y conglomerados, linealización de Taylor). Regla: coeficiente de variación menor a 15 %, cifra publicable; de 15 a 25 %, referencial (entre paréntesis); mayor, no se muestra. Con un solo trimestre, la desocupación es precisa para Bolivia, el área urbana y los departamentos del eje; para los nueve departamentos se juntan los cuatro trimestres del año (o los cuatro últimos), lo que reduce el error a la mitad.</p>
       <p>En el Beni, desde el tercer trimestre de 2021 casi nadie que trabaja menos de 40 horas declara querer trabajar más: su subocupación y su subutilización amplia no son comparables con las de los demás departamentos.</p>
+      </div>
+      <div lang="en">
+      <h2>Precision and publication</h2>
+      <p>Each indicator carries its <strong>sampling error</strong>, calculated with the survey design (strata and clusters, Taylor linearization). Rule: a coefficient of variation below 15%, the figure is publishable; from 15 to 25%, indicative (in parentheses); higher, it is not shown. With a single quarter, unemployment is precise for Bolivia, urban areas and the central-axis departments; for the nine departments the four quarters of the year (or the last four) are pooled, which cuts the error in half.</p>
+      <p>In Beni, since the third quarter of 2021 almost no one who works fewer than 40 hours reports wanting to work more: its underemployment and broad underutilization are not comparable with those of the other departments.</p>
+      </div>
     </section>
 
     <section id="ingresos">
+      <div lang="es">
       <h2>Ingresos</h2>
       <p>Ingreso laboral mensual de la ocupación principal (el que calcula el INE), de quienes declaran un ingreso positivo. Se expresa en bolivianos del primer trimestre de 2026 con el Índice de Precios al Consumidor del INE (serie empalmada) del mes de la entrevista. Se usa la mediana. El salario mínimo de comparación es el de cada año.</p>
+      </div>
+      <div lang="en">
+      <h2>Income</h2>
+      <p>Monthly labor income from the main job (the one INE calculates), for those who report a positive income. It is expressed in bolivianos of the first quarter of 2026 using INE's Consumer Price Index (spliced series) for the month of the interview. The median is used. The minimum wage used for comparison is that of each year.</p>
+      </div>
     </section>
 
     <section id="flujos">
+      <div lang="es">
       <h2>Flujos entre trimestres</h2>
       <p>Las transiciones (de ocupado a desocupado, de informal a formal, etc.) siguen a las mismas personas en dos trimestres consecutivos con el identificador de panel de la ECE, verificando sexo y edad. Como la muestra rural no tiene panel, los flujos son del <strong>área urbana</strong>. Se usan los factores de expansión del trimestre de origen.</p>
+      </div>
+      <div lang="en">
+      <h2>Flows between quarters</h2>
+      <p>Transitions (from employed to unemployed, from informal to formal, etc.) follow the same people across two consecutive quarters using the ECE panel identifier, checking sex and age. Because the rural sample has no panel, the flows refer to <strong>urban areas</strong>. The expansion factors of the quarter of origin are used.</p>
+      </div>
     </section>
 
     <section id="hueco-2020">
+      <div lang="es">
       <h2>2020: los trimestres sin encuesta rural</h2>
       <p>Entre abril y diciembre de 2020, por la cuarentena, el INE levantó la ECE por teléfono y sólo en el área urbana: apenas tres de cada diez conglomerados rurales tenían un número de contacto, y no se encuestó ni una vivienda rural en esos tres trimestres (Nota técnica ECE 02/2020; el microdato lo confirma). El INE no publica el total de Bolivia, el área rural ni los totales departamentales de esos trimestres. En el monitor se muestran como <strong>estimación POPULI</strong>, siempre aparte de los datos del INE: línea punteada con su intervalo de 95 % en una banda tenue, barras más claras en los gráficos de barras y la marca «estimado» en cada cifra.</p>
 
@@ -114,17 +170,47 @@
         <li><strong>Pandemia</strong>: se esconde la parte <em>urbana</em> de cada departamento en abril-diciembre de 2020, que sí se observó, y se la estima con el resto del área urbana como compañera: <span class="num" data-m="hueco.pruebas.V2"></span> por indicador. Es la única prueba que mide si un método capta un golpe que no ve. Es optimista para los métodos que toman prestado de lo urbano: dos ciudades se parecen más entre sí que el campo a la ciudad.</li>
       </ul>
       <p>Error de cada método dividido por el de la interpolación lineal (1,00 = igual que interpolar; menos es mejor; en negrita, el menor de cada prueba):</p>
+      </div>
+      <div lang="en">
+      <h2>2020: the quarters without a rural survey</h2>
+      <p>Between April and December 2020, because of the lockdown, INE conducted the ECE by phone and only in urban areas: barely three in ten rural clusters had a contact number, and not a single rural dwelling was surveyed in those three quarters (Nota técnica ECE 02/2020; the microdata confirm it). INE does not publish the total for Bolivia, for rural areas or the departmental totals for those quarters. In the monitor they are shown as a <strong>POPULI estimate</strong>, always apart from INE data: a dashed line with its 95% interval in a faint band, lighter bars in the bar charts, and the label “estimated” on every figure.</p>
+
+      <h3>What is estimated and what is not</h3>
+      <ul>
+        <li><strong>Estimated:</strong> Bolivia, rural areas, Santa Cruz, La Paz and Cochabamba for unemployment, participation, employment, underemployment, underutilization, informality, wage employees, median income (monthly and hourly) and employed people below the minimum wage; the structure of employment (status in employment, size and sector) and employment in each activity for Bolivia and rural areas; and the year 2020 for the nine departments on the map.</li>
+        <li><strong>Not estimated:</strong> health insurance of wage employees (the question was not asked even in the cities between April 2020 and the end of 2021: there is nowhere to get the information from), income by activity and income by sex or formality in rural areas (very few cases per quarter), and flows between quarters (they exist only for urban areas).</li>
+      </ul>
+
+      <h3>Four candidate methods</h3>
+      <p>All of them treat each survey figure as the true value plus a sampling error whose size is known from the design (stratum and cluster), and they estimate the true value for the missing quarters from what was observed before (up to the first quarter of 2020) and after (from the first quarter of 2021).</p>
+      <ul>
+        <li><strong>Linear interpolation</strong>, with each quarter's seasonality: what anyone would do. It is the benchmark against which the others are measured.</li>
+        <li><strong>Univariate</strong>: a structural signal-plus-noise model of the rural series alone (level or trend, quarterly seasonality and irregular component; Kalman filter and smoother). It is the type of model the U.S. Bureau of Labor Statistics (BLS) uses for state unemployment and the statistical office of the Netherlands (CBS) for its monthly figures. It does not look at urban data: if rural areas took a hit in 2020, it does not see it.</li>
+        <li><strong>Difference from urban</strong>: it models the gap (in proportional terms) between rural and urban and applies it to the urban figure, which was observed in 2020. It assumes that rural areas moved like the cities: it takes in the <em>entire</em> 2020 shock.</li>
+        <li><strong>Bivariate</strong>: a joint model of rural and urban with correlated levels, like the one Harvey and Chung (2000) proposed for the British labor force survey and that CBS uses with auxiliary series. It takes in the urban shock <em>to the extent</em> that the two series moved together in normal years.</li>
+      </ul>
+
+      <h3>Three out-of-sample tests</h3>
+      <p>Each method was tested by hiding figures that are in fact known and comparing what it estimates with what the survey measured (<span class="num" data-m="hueco.predicciones" data-fmt="miles"></span> predictions in all):</p>
+      <ul>
+        <li><strong>Normal years, Bolivia's rural areas</strong>: the second to fourth quarters of each year with data (2016–2019 and 2022–2025) are hidden: <span class="num" data-m="hueco.pruebas.V1"></span> predictions per indicator.</li>
+        <li><strong>Normal years, rural part of each department</strong>: the same for the nine departmental rural series, as noisy as the ones that have to be estimated: <span class="num" data-m="hueco.pruebas.V1b"></span> per indicator.</li>
+        <li><strong>Pandemic</strong>: the <em>urban</em> part of each department in April–December 2020, which was observed, is hidden and estimated with the rest of the urban areas as its companion series: <span class="num" data-m="hueco.pruebas.V2"></span> per indicator. It is the only test that measures whether a method captures a shock it does not see. It is optimistic for the methods that borrow from urban data: two cities resemble each other more than the countryside resembles the city.</li>
+      </ul>
+      <p>Error of each method divided by that of linear interpolation (1.00 = same as interpolating; lower is better; in bold, the lowest in each test):</p>
+      </div>
       <div class="tabla"><table id="t-met"><thead>
-        <tr><th rowspan="2">Indicador</th><th colspan="4" style="text-align:center">Años normales (área rural y departamentos)</th><th colspan="4" style="text-align:center">Pandemia (ciudades escondidas)</th></tr>
-        <tr><th>Univariado</th><th>Diferencia</th><th>Bivariado</th><th>Promedio</th><th>Univariado</th><th>Diferencia</th><th>Bivariado</th><th>Promedio</th></tr>
+        <tr><th rowspan="2"><span lang="es">Indicador</span><span lang="en">Indicator</span></th><th colspan="4" style="text-align:center"><span lang="es">Años normales (área rural y departamentos)</span><span lang="en">Normal years (rural areas and departments)</span></th><th colspan="4" style="text-align:center"><span lang="es">Pandemia (ciudades escondidas)</span><span lang="en">Pandemic (hidden cities)</span></th></tr>
+        <tr><th><span lang="es">Univariado</span><span lang="en">Univariate</span></th><th><span lang="es">Diferencia</span><span lang="en">Difference</span></th><th><span lang="es">Bivariado</span><span lang="en">Bivariate</span></th><th><span lang="es">Promedio</span><span lang="en">Average</span></th><th><span lang="es">Univariado</span><span lang="en">Univariate</span></th><th><span lang="es">Diferencia</span><span lang="en">Difference</span></th><th><span lang="es">Bivariado</span><span lang="en">Bivariate</span></th><th><span lang="es">Promedio</span><span lang="en">Average</span></th></tr>
       </thead><tbody></tbody></table></div>
 
+      <div lang="es">
       <h3>La decisión: un promedio de modelos</h3>
       <p>Ningún método gana en todo. En años normales los tres empatan: sin un golpe grande, mirar a la ciudad casi no ayuda. En la pandemia, el univariado no ve el golpe y en participación y ocupación se equivoca el doble que los otros; pero el bivariado falla en la desocupación y la diferencia en la informalidad. Ante esa incertidumbre sobre cuál es el modelo correcto, la respuesta robusta es combinarlos (Bates y Granger 1969; Timmermann 2006). La regla se fijó <strong>antes</strong> de ver los resultados:</p>
       <ul>
         <li>para cada indicador se toma la mejor variante del univariado, la diferencia y el bivariado; queda afuera el que se equivoca más de 25 % por encima del mejor en los años normales;</li>
         <li>la estimación es el <strong>promedio</strong> de los que quedan, con pesos inversos a su error en años normales;</li>
-        <li>el intervalo suma la incertidumbre de cada modelo y el <strong>desacuerdo entre ellos</strong>, y se amplía con el cociente entre el error observado en las pruebas y el que el modelo cree tener (el filtro de Kalman subestima su propio error: van den Brakel y Krieg 2017). Se prefirió esta calibración al <em>bootstrap</em> de Pfeffermann y Tiller (2005) porque mide el error total, incluido el de usar un modelo equivocado, y no sólo el de estimar sus parámetros.</li>
+        <li>el intervalo suma la incertidumbre de cada modelo y el <strong>desacuerdo entre ellos</strong>, y se amplía con el cociente entre el error observado en las pruebas y el que el modelo cree tener (el filtro de Kalman subestima su propio error: Bollineni-Balabay et al. 2017). Se prefirió esta calibración al <em>bootstrap</em> de Pfeffermann y Tiller (2005) porque mide el error total, incluido el de usar un modelo equivocado, y no sólo el de estimar sus parámetros.</li>
       </ul>
       <p>El resultado: el promedio es tan bueno como el mejor método en años normales, en la pandemia reduce a la mitad el error del univariado en participación y ocupación, y nunca es el peor. Su intervalo de 90 % contuvo el valor medido en el <span class="num" data-m="hueco.cobertura90.V1"></span> % de los casos del área rural, el <span class="num" data-m="hueco.cobertura90.V1b"></span> % de los departamentos rurales y el <span class="num" data-m="hueco.cobertura90.V2"></span> % en la prueba de pandemia: los intervalos aguantan también el golpe.</p>
 
@@ -139,13 +225,43 @@
       </ul>
 
       <h3>Resultados (estimación e intervalo de 95 %)</h3>
-      <div class="tabla"><table id="t-res"><thead><tr><th>Indicador</th><th>2T-2020</th><th>3T-2020</th><th>4T-2020</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <div lang="en">
+      <h3>The decision: a model average</h3>
+      <p>No method wins on every count. In normal years the three are tied: without a large shock, looking at the cities hardly helps. In the pandemic, the univariate model does not see the shock and, for participation and employment, its error is twice that of the others; but the bivariate model fails on unemployment, and the difference model on informality. Given this uncertainty about which model is the right one, the robust answer is to combine them (Bates and Granger 1969; Timmermann 2006). The rule was set <strong>before</strong> seeing the results:</p>
+      <ul>
+        <li>for each indicator, the best variant of the univariate, difference and bivariate models is taken; a model is left out if its error in normal years is more than 25% above that of the best one;</li>
+        <li>the estimate is the <strong>average</strong> of the remaining models, with weights inverse to their error in normal years;</li>
+        <li>the interval adds up the uncertainty of each model and the <strong>disagreement among them</strong>, and it is widened by the ratio between the error observed in the tests and the error the model believes it has (the Kalman filter underestimates its own error: Bollineni-Balabay et al. 2017). This calibration was preferred to the bootstrap of Pfeffermann and Tiller (2005) because it measures the total error, including that of using the wrong model, and not only that of estimating its parameters.</li>
+      </ul>
+      <p>The result: the average is as good as the best method in normal years, in the pandemic it halves the univariate model's error for participation and employment, and it is never the worst. Its 90% interval contained the measured value in <span class="num" data-m="hueco.cobertura90.V1"></span>% of the cases for rural areas, <span class="num" data-m="hueco.cobertura90.V1b"></span>% for the rural parts of the departments and <span class="num" data-m="hueco.cobertura90.V2"></span>% in the pandemic test: the intervals also hold up under the shock.</p>
 
+      <h3>From rural to total</h3>
+      <ul>
+        <li><strong>Totals</strong>: Bolivia (and each department) is the sum of the observed urban areas and the estimated rural areas, each rate weighted by its own denominator (working-age population, labor force, employed, employed with income data). It is an identity: in every quarter with a complete survey it reproduces the official total to the decimal.</li>
+        <li><strong>Consistency across departments</strong>: the rural parts of the nine departments are adjusted pro rata so that their counts of people add up to those of Bolivia's rural areas, which are estimated with a larger sample (Pfeffermann and Tiller 2006). The adjustments to population and employed do not exceed 1%; those to the unemployed range from <span class="num" data-m="hueco.coherencia.des.0" data-fmt="dec2"></span> to <span class="num" data-m="hueco.coherencia.des.1" data-fmt="dec2"></span> and those to the underemployed from <span class="num" data-m="hueco.coherencia.tsub.0" data-fmt="dec2"></span> to <span class="num" data-m="hueco.coherencia.tsub.1" data-fmt="dec2"></span>.</li>
+        <li><strong>When the sample has no cases</strong> (for example, no unemployed person in rural Potosí in a given quarter), the design gives 0 with an error of 0 and the model would take that 0 as exact: the typical error of the series itself is used.</li>
+        <li><strong>Income medians</strong>: two medians cannot be added. For Bolivia and the departments, the quarter's distribution is built as a <strong>mixture</strong>: the observed urban incomes plus a rural distribution with the shape of the neighboring quarters with data, shifted to the estimated rural median and weighted by the estimated rural employed. Tested in the years with data (with the true rural median), the mixture reproduces Bolivia's median with a typical error of <span class="num" data-m="hueco.mezcla_error_pct.Bolivia" data-fmt="dec2"></span>% (Santa Cruz <span class="num" data-m="hueco.mezcla_error_pct.Santa Cruz" data-fmt="dec2"></span>%, La Paz <span class="num" data-m="hueco.mezcla_error_pct.La Paz" data-fmt="dec2"></span>%, Cochabamba <span class="num" data-m="hueco.mezcla_error_pct.Cochabamba" data-fmt="dec2"></span>%); that error enters the interval, together with that of the rural median, by simulation.</li>
+        <li><strong>Structure and activities</strong>: the rural shares (status in employment, size, sector, activity) are estimated the same way, rescaled to add up to 100 and multiplied by the estimated rural employed.</li>
+        <li><strong>The year 2020</strong> (map and activities) pools the four quarters as in the other years: the first one observed and the other three estimated. Applied to 2019, the same calculation reproduces the exact annual figure.</li>
+      </ul>
+
+      <h3>Results (estimate and 95% interval)</h3>
+      </div>
+      <div class="tabla"><table id="t-res"><thead><tr><th><span lang="es">Indicador</span><span lang="en">Indicator</span></th><th><span lang="es">2T-2020</span><span lang="en">Q2 2020</span></th><th><span lang="es">3T-2020</span><span lang="en">Q3 2020</span></th><th><span lang="es">4T-2020</span><span lang="en">Q4 2020</span></th></tr></thead><tbody></tbody></table></div>
+
+      <div lang="es">
       <h3>Límites</h3>
       <div class="caja">Ningún método puede medir lo que no se encuestó. La prueba de pandemia se hizo entre ciudades; si el campo sufrió un golpe muy distinto al urbano —mayor o menor— y se revirtió antes de enero de 2021, el dato no lo puede ver. Por eso las estimaciones van siempre marcadas, con su intervalo, y nunca mezcladas con las cifras del INE.</div>
+      </div>
+      <div lang="en">
+      <h3>Limitations</h3>
+      <div class="caja">No method can measure what was not surveyed. The pandemic test was run among cities; if rural areas suffered a shock very different from the urban one—larger or smaller—and it reversed before January 2021, the data cannot see it. That is why the estimates are always marked, with their interval, and never mixed with INE figures.</div>
+      </div>
     </section>
 
     <section id="referencias">
+      <div lang="es">
       <h2>Referencias</h2>
       <ol class="refs">
         <li>INE (2020). <em>Nota técnica ECE 02/2020</em> y <a href="https://www.ine.gob.bo/index.php/informacion-tecnica/" target="_blank" rel="noopener">documentación técnica de la ECE</a> (cuestionarios, diseño muestral, sintaxis, propuesta metodológica de informalidad).</li>
@@ -163,26 +279,52 @@
         <li>Schiavoni, C., Koopman, S. J., Palm, F., Smeekes, S. y van den Brakel, J. (2021). <a href="https://www.cbs.nl/-/media/_pdf/2021/08/time-varying-cor.pdf" target="_blank" rel="noopener">Documento de discusión de la CBS sobre la correlación cambiante entre la encuesta de empleo y una serie auxiliar</a>: la razón para no fiarse de una sola correlación estimada en años normales.</li>
         <li>Harvey, A. C. (1989). <em>Forecasting, Structural Time Series Models and the Kalman Filter</em>. Cambridge University Press. · Durbin, J. y Koopman, S. J. (2012). <em>Time Series Analysis by State Space Methods</em>, 2.ª ed. Oxford University Press.</li>
       </ol>
+      </div>
+      <div lang="en">
+      <h2>References</h2>
+      <ol class="refs">
+        <li>INE (2020). <em>Nota técnica ECE 02/2020</em> and <a href="https://www.ine.gob.bo/index.php/informacion-tecnica/" target="_blank" rel="noopener">ECE technical documentation</a> (questionnaires, sample design, syntax, methodological proposal for measuring informality).</li>
+        <li>Tiller, R. (1992). Time series modeling of sample survey data from the U.S. Current Population Survey. <em>Journal of Official Statistics</em> 8(2). · Tiller, R. (2006). <a href="https://www.bls.gov/osmr/research-papers/2006/pdf/st060010.pdf" target="_blank" rel="noopener">New Generation of Models for Producing State Labor Force Estimates</a>, BLS.</li>
+        <li>BLS. <a href="https://www.bls.gov/opub/hom/lau/calculation.htm" target="_blank" rel="noopener">Handbook of Methods: Local Area Unemployment Statistics — Calculation</a>.</li>
+        <li>Pfeffermann, D. (1991). Estimation and seasonal adjustment of population means using data from repeated surveys. <em>Journal of Business &amp; Economic Statistics</em> 9(2).</li>
+        <li>van den Brakel, J. and Krieg, S. (2015). <a href="https://www150.statcan.gc.ca/n1/pub/12-001-x/2015002/article/14231-eng.htm" target="_blank" rel="noopener">Dealing with small sample sizes, rotation group bias and discontinuities in a rotating panel design</a>. <em>Survey Methodology</em> 41(2).</li>
+        <li>Bollineni-Balabay, O., van den Brakel, J., Palm, F. and Boonstra, H. J. (2017). <a href="https://www150.statcan.gc.ca/pub/12-001-x/2017001/article/14819/01-eng.htm" target="_blank" rel="noopener">State space time series modelling of the Dutch Labour Force Survey: Model selection and mean squared errors estimation</a>. <em>Survey Methodology</em> 43(1).</li>
+        <li>van den Brakel, J., Souren, M. and Krieg, S. (2022). <a href="https://econpapers.repec.org/RePEc:bla:jorssa:v:185:y:2022:i:4:p:1560-1583" target="_blank" rel="noopener">Estimating monthly labour force figures during the COVID-19 pandemic in the Netherlands</a>. <em>Journal of the Royal Statistical Society A</em> 185(4).</li>
+        <li>ONS. <a href="https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/methodologies/experimentalmodelbasedsinglemonthestimatesforthelabourforcesurveymethodsexplained" target="_blank" rel="noopener">Model-based single-month estimates for the Labour Force Survey: methods explained</a>.</li>
+        <li>ILO. <a href="https://ilostat.ilo.org/methods/concepts-and-definitions/ilo-modelled-estimates/" target="_blank" rel="noopener">ILO modelled estimates: methodological overview</a>.</li>
+        <li>Harvey, A. C. and Chung, C.-H. (2000). <a href="https://ideas.repec.org/a/bla/jorssa/v163y2000i3p303-309.html" target="_blank" rel="noopener">Estimating the underlying change in unemployment in the UK</a>. <em>Journal of the Royal Statistical Society A</em> 163(3).</li>
+        <li>Pfeffermann, D. and Tiller, R. (2005). <a href="https://eprints.soton.ac.uk/9731/" target="_blank" rel="noopener">Bootstrap approximation to prediction MSE for state-space models with estimated parameters</a>. <em>Journal of Time Series Analysis</em> 26(6). · Pfeffermann, D. and Tiller, R. (2006). <a href="https://eprints.soton.ac.uk/17487" target="_blank" rel="noopener">Small-area estimation with state-space models subject to benchmark constraints</a>. <em>Journal of the American Statistical Association</em> 101(476).</li>
+        <li>Bates, J. M. and Granger, C. W. J. (1969). The combination of forecasts. <em>Operational Research Quarterly</em> 20(4). · Timmermann, A. (2006). Forecast combinations. In <em>Handbook of Economic Forecasting</em>, vol. 1. Elsevier.</li>
+        <li>Schiavoni, C., Koopman, S. J., Palm, F., Smeekes, S. and van den Brakel, J. (2021). <a href="https://www.cbs.nl/-/media/_pdf/2021/08/time-varying-cor.pdf" target="_blank" rel="noopener">CBS discussion paper on the time-varying correlation between the labor force survey and an auxiliary series</a>: the reason not to rely on a single correlation estimated in normal years.</li>
+        <li>Harvey, A. C. (1989). <em>Forecasting, Structural Time Series Models and the Kalman Filter</em>. Cambridge University Press. · Durbin, J. and Koopman, S. J. (2012). <em>Time Series Analysis by State Space Methods</em>, 2nd ed. Oxford University Press.</li>
+      </ol>
+      </div>
     </section>
   </main>
-  <div class="pie">Centro de Estudios POPULI · Monitor Laboral · <span id="gen"></span></div>
+  <div class="pie">Centro de Estudios POPULI · <span lang="es">Monitor Laboral</span><span lang="en">Labor Market Monitor</span> · <span id="gen"></span></div>
 
   <script>
   (function () {
-    var nb = function (x, d) { return x == null ? '—' : Number(x).toLocaleString('es-BO', { minimumFractionDigits: d, maximumFractionDigits: d }); };
-    var fecha = function (k) { var m = /^(\d{4})-T(\d)$/.exec(k || ''); return m ? 'T' + m[2] + ' ' + m[1] : k; };
-    var NOM = { td: 'Desocupación', tgp: 'Participación', to: 'Ocupación', toi: 'Ocupación informal', tosi: 'Sector informal', tsub: 'Subocupación por horas', lu4: 'Subutilización amplia (LU4)', ylab_med: 'Ingreso mediano (Bs del 1T-2026)', pet: 'Población en edad de trabajar' };
-    var MOD = { 'nivel+est.fija': 'nivel + estacionalidad fija', 'nivel+est.estoc': 'nivel + estacionalidad cambiante', 'tendencia+est.fija': 'tendencia + estacionalidad fija' };
+    // idioma: lo fija el script del <head> (?lang=en); en castellano todo sale como antes
+    var EN = document.documentElement.lang === 'en';
+    var T = function (es, en) { return EN ? en : es; };
+    var nb = function (x, d) { return x == null ? '—' : Number(x).toLocaleString(T('es-BO', 'en-US'), { minimumFractionDigits: d, maximumFractionDigits: d }); };
+    var fecha = function (k) { var m = /^(\d{4})-T(\d)$/.exec(k || ''); return m ? T('T', 'Q') + m[2] + ' ' + m[1] : k; };
+    var NOM = T({ td: 'Desocupación', tgp: 'Participación', to: 'Ocupación', toi: 'Ocupación informal', tosi: 'Sector informal', tsub: 'Subocupación por horas', lu4: 'Subutilización amplia (LU4)', ylab_med: 'Ingreso mediano (Bs del 1T-2026)', pet: 'Población en edad de trabajar' },
+      { td: 'Unemployment rate', tgp: 'Participation rate', to: 'Employment rate', toi: 'Informal employment', tosi: 'Informal sector', tsub: 'Time-related underemployment', lu4: 'Broad underutilization (LU4)', ylab_med: 'Median income (Q1 2026 Bs)', pet: 'Working-age population' });
+    var MOD = T({ 'nivel+est.fija': 'nivel + estacionalidad fija', 'nivel+est.estoc': 'nivel + estacionalidad cambiante', 'tendencia+est.fija': 'tendencia + estacionalidad fija' },
+      { 'nivel+est.fija': 'level + fixed seasonality', 'nivel+est.estoc': 'level + time-varying seasonality', 'tendencia+est.fija': 'trend + fixed seasonality' });
     var ORDEN = ['td', 'tgp', 'to', 'toi', 'tosi', 'tsub', 'lu4', 'ylab_med'];
     fetch('data/metodologia.json?v=' + new Date().toISOString().slice(0, 10)).then(function (r) { return r.json(); }).then(function (M) {
       document.querySelectorAll('[data-m]').forEach(function (el) {
         var v = el.dataset.m.split('.').reduce(function (o, k) { return o && o[k]; }, M), f = el.dataset.fmt;
-        el.textContent = f === 'pct' ? nb(v, 2) + ' %' : f === 'miles' ? nb(v, 0) : f === 'dec3' ? nb(v, 3) : f === 'dec2' ? nb(v, 2) : /^\d{4}-T\d$/.test(v) ? fecha(v) : v;
+        el.textContent = f === 'pct' ? nb(v, 2) + T(' %', '%') : f === 'miles' ? nb(v, 0) : f === 'dec3' ? nb(v, 3) : f === 'dec2' ? nb(v, 2) : /^\d{4}-T\d$/.test(v) ? fecha(v) : v;
       });
-      document.getElementById('gen').textContent = 'cifras generadas el ' + M.generado;
+      document.getElementById('gen').textContent = T('cifras generadas el ', 'figures generated on ') + M.generado;
       var H = M.hueco; if (!H) return;
       var NUC = ['td', 'tgp', 'to', 'tsub', 'lu4', 'toi', 'tosi', 'bajo_smn', 'ylab_med'];
-      var NOM2 = { td: 'Desocupación', tgp: 'Participación', to: 'Ocupación', tsub: 'Subocupación por horas', lu4: 'Subutilización amplia (LU4)', toi: 'Ocupación informal', tosi: 'Sector informal', bajo_smn: 'Bajo el salario mínimo', ylab_med: 'Ingreso mediano' };
+      var NOM2 = T({ td: 'Desocupación', tgp: 'Participación', to: 'Ocupación', tsub: 'Subocupación por horas', lu4: 'Subutilización amplia (LU4)', toi: 'Ocupación informal', tosi: 'Sector informal', bajo_smn: 'Bajo el salario mínimo', ylab_med: 'Ingreso mediano' },
+        { td: 'Unemployment rate', tgp: 'Participation rate', to: 'Employment rate', tsub: 'Time-related underemployment', lu4: 'Broad underutilization (LU4)', toi: 'Informal employment', tosi: 'Informal sector', bajo_smn: 'Below the minimum wage', ylab_med: 'Median income' });
       var MET = ['univariado', 'diferencia', 'bivariado', 'promedio'];
       document.querySelector('#t-met tbody').innerHTML = NUC.map(function (k) {
         var x = H.errores_relativos.filter(function (r) { return r.indicador === k; })[0]; if (!x) return '';
@@ -199,8 +341,8 @@
         return '<td class="n">' + nb(x.estimado, dec) + ' <span style="color:#64748B">(' + nb(x.li95, dec) + '–' + nb(x.ls95, dec) + ')</span></td>';
       };
       var filas = '';
-      [['Bolivia', 'Bolivia (área urbana observada + área rural estimada)', ['td', 'tgp', 'toi', 'lu4', 'ylab_med']],
-       ['Rural', 'Área rural', ['td', 'tgp', 'toi', 'ylab_med']],
+      [['Bolivia', T('Bolivia (área urbana observada + área rural estimada)', 'Bolivia (observed urban areas + estimated rural areas)'), ['td', 'tgp', 'toi', 'lu4', 'ylab_med']],
+       ['Rural', T('Área rural', 'Rural areas'), ['td', 'tgp', 'toi', 'ylab_med']],
        ['Santa Cruz', 'Santa Cruz', ['td', 'tgp', 'ylab_med']], ['La Paz', 'La Paz', ['td', 'tgp', 'ylab_med']], ['Cochabamba', 'Cochabamba', ['td', 'tgp', 'ylab_med']]].forEach(function (g) {
         filas += '<tr><th colspan="4" style="color:#001219">' + g[1] + '</th></tr>';
         g[2].forEach(function (k) { filas += '<tr><td>' + NOM[k] + (k === 'ylab_med' ? '' : ' (%)') + '</td>' + ['2020-T2', '2020-T3', '2020-T4'].map(function (p) { return celda(g[0], k, p); }).join('') + '</tr>'; });

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Empleo e ingresos por actividad, en el tiempo · Populi</title>
+  <title data-en="Employment and income by activity, over time · Populi">Empleo e ingresos por actividad, en el tiempo · Populi</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -30,16 +30,16 @@
 <body>
   <div class="wrap">
     <div class="sec-hd">
-      <div class="sec-title"><span class="accent-bar"></span>Cada actividad en el tiempo</div>
-      <div class="sec-sub" id="sub">Ocupados de cada actividad (promedio de cuatro trimestres) frente al año base (= 100)</div>
+      <div class="sec-title" data-en='<span class="accent-bar"></span>Each activity over time'><span class="accent-bar"></span>Cada actividad en el tiempo</div>
+      <div class="sec-sub" id="sub" data-en="Employed in each activity (four-quarter average) relative to the base year (= 100)">Ocupados de cada actividad (promedio de cuatro trimestres) frente al año base (= 100)</div>
     </div>
 
     <div class="hz-bar">
-      <div class="hz-item"><span class="hz-lbl">Variable</span><div class="hz-grp" id="b-variable"></div></div>
-      <div class="hz-item"><span class="hz-lbl">Medida</span><div class="hz-grp" id="b-medida"></div></div>
-      <div class="hz-item" id="it-base"><span class="hz-lbl">Año base</span><div class="hz-grp" id="b-base"></div></div>
-      <div class="hz-item"><span class="hz-lbl">Escala</span><div class="hz-grp" id="b-escala"></div></div>
-      <div class="hz-item"><span class="hz-lbl">Dónde</span><div class="hz-grp" id="b-dominio"></div></div>
+      <div class="hz-item"><span class="hz-lbl" data-en="Variable">Variable</span><div class="hz-grp" id="b-variable"></div></div>
+      <div class="hz-item"><span class="hz-lbl" data-en="Measure">Medida</span><div class="hz-grp" id="b-medida"></div></div>
+      <div class="hz-item" id="it-base"><span class="hz-lbl" data-en="Base year">Año base</span><div class="hz-grp" id="b-base"></div></div>
+      <div class="hz-item"><span class="hz-lbl" data-en="Scale">Escala</span><div class="hz-grp" id="b-escala"></div></div>
+      <div class="hz-item"><span class="hz-lbl" data-en="Area">Dónde</span><div class="hz-grp" id="b-dominio"></div></div>
     </div>
 
     <div class="kpi-grid" id="kpis"></div>
@@ -47,10 +47,10 @@
     <div class="main-grid">
       <div class="chart-card">
         <div class="chart-ctrl"><div class="tog-grp" id="pastillas"></div></div>
-        <div class="grafico" id="chart"><div class="loading"><div class="spinner"></div><span>Cargando las actividades…</span></div></div>
+        <div class="grafico" id="chart"><div class="loading"><div class="spinner"></div><span data-en="Loading activities…">Cargando las actividades…</span></div></div>
       </div>
       <div class="panel">
-        <div class="panel-hd"><span class="panel-hd-t">Lectura del indicador</span><span class="panel-hd-d" id="panel-fecha"></span></div>
+        <div class="panel-hd"><span class="panel-hd-t" data-en="Reading the indicator">Lectura del indicador</span><span class="panel-hd-d" id="panel-fecha"></span></div>
         <div class="panel-body" id="panel"></div>
       </div>
     </div>
@@ -61,41 +61,41 @@
 
   <script>
   (function () {
-    var C = PM.C, NB = ' ';
+    var C = PM.C, NB = ' ', Tr = PM.t;   // Tr: el texto en dos idiomas (T ya son los períodos)
     // El lenguaje de los paneles es el de «Cada actividad frente a su punto de partida» (Monitor de Actividad):
     // la línea en TINTA, el relleno por signo contra la base (turquesa arriba, rojo abajo, cruce interpolado),
     // el total gris punteado y la cifra grande bajo el nombre.
     var ARRIBA = { claro: '#0A9396', oscuro: '#94D2BD' }, ABAJO = { claro: '#C71E1D', oscuro: '#E8706B' }, TOT = C.tinta;
-    var CORTO = { 'Servicios financieros, profesionales y TIC': 'Financieros y profesionales', 'Transporte y almacenamiento': 'Transporte',
-      'Industria manufacturera': 'Manufactura', 'Electricidad, gas y agua': 'Electricidad, gas y agua', 'Administración pública': 'Administración pública',
-      'Salud y asistencia social': 'Salud', 'Alojamiento y comidas': 'Alojamiento y comidas' };
-    var VAR = { empleo: { nombre: 'Empleo', total: 'Total de ocupados', unidad: 'ocupados' }, ingreso: { nombre: 'Ingreso', total: 'Ingreso de todos', unidad: 'Bs del 1T-2026' } };
+    var CORTO = { 'Servicios financieros, profesionales y TIC': Tr('Financieros y profesionales', 'Finance and professional'), 'Transporte y almacenamiento': Tr('Transporte', 'Transport'),
+      'Industria manufacturera': Tr('Manufactura', 'Manufacturing'), 'Electricidad, gas y agua': Tr('Electricidad, gas y agua', 'Electricity, gas and water'), 'Administración pública': Tr('Administración pública', 'Public administration'),
+      'Salud y asistencia social': Tr('Salud', 'Health'), 'Alojamiento y comidas': Tr('Alojamiento y comidas', 'Accommodation and food') };
+    var VAR = { empleo: { nombre: Tr('Empleo', 'Employment'), total: Tr('Total de ocupados', 'Total employed'), unidad: Tr('ocupados', 'employed') }, ingreso: { nombre: Tr('Ingreso', 'Income'), total: Tr('Ingreso de todos', 'Income of all workers'), unidad: '' } };   // unidad del ingreso: con la base de los datos, al cargar
     var MED = { nivel: { ref: 100, pct: false }, crec: { ref: 0, pct: true } };
-    var DOMS = { 'Bolivia': [['Bolivia', 'Bolivia'], ['Urbano', 'Área urbana'], ['Rural', 'Área rural']],
-      'Departamento': [['Santa Cruz', 'Santa Cruz'], ['La Paz', 'La Paz'], ['Cochabamba', 'Cochabamba']] };
+    var DOMS = { 'Bolivia': [['Bolivia', 'Bolivia'], ['Urbano', L.N('Área urbana')], ['Rural', L.N('Área rural')]] };
+    DOMS[Tr('Departamento', 'Department')] = [['Santa Cruz', 'Santa Cruz'], ['La Paz', 'La Paz'], ['Cochabamba', 'Cochabamba']];
     var MIN_N = 120;   // casos en la ventana de cuatro trimestres para mostrar un panel
     var estado = { variable: 'empleo', medida: 'nivel', base: '2019', escala: 'propia', dominio: 'Bolivia', idx: null, k: null };
     var D, T, X, RAMAS, BASES, S = {}, NIV = {}, ESTV = [], ORDEN = [], I = [], grafico, geo = [], hoverG = null;
     var activas = new Set(['tot', '_fija']);
     PM.imagen = { proporcion: 1 };
 
-    var nom = function (k) { return k === 'tot' ? VAR[estado.variable].total : (CORTO[k] || k); };
+    var nom = function (k) { return k === 'tot' ? VAR[estado.variable].total : (CORTO[k] || L.N(k)); };
     var med = function () { return MED[estado.medida]; };
     function fmt(v) { return v == null ? '—' : med().pct ? PM.pct(v, 1, true) : PM.num(v, 1); }
     function abs(v) { return v == null ? '—' : estado.variable === 'empleo' ? L.miles(v) : L.bs(v); }
     function lado(v) { return v == null ? TOT : v >= med().ref ? ARRIBA : ABAJO; }
 
     PM.cargar(['ramas_trimestral.json']).then(function (r) {
-      D = r[0]; T = D.periodos; RAMAS = D.ramas;
+      D = r[0]; T = D.periodos; RAMAS = D.ramas; VAR.ingreso.unidad = L.base(D.metadata).corto;
       X = T.map(function (t) { var p = PM.periodo(t); return p.a + (p.t - 1) / 4; });
       var ultAnio = +T[T.length - 1].slice(0, 4) - (T[T.length - 1].slice(-1) === '4' ? 0 : 1);
       BASES = ['2017', '2019', String(ultAnio)].filter(function (a) { return T.filter(function (t) { return t.slice(0, 4) === a; }).length === 4; });
       estado.idx = T.length - 1;
-      PM.botonera(document.getElementById('b-variable'), [['empleo', 'Empleo'], ['ingreso', 'Ingreso real']], estado.variable, function (v) { estado.variable = v; pastillas(); todo(); });
-      PM.botonera(document.getElementById('b-medida'), [['nivel', 'Nivel (base = 100)'], ['crec', 'Crecimiento']], estado.medida, function (v) { estado.medida = v; todo(); });
+      PM.botonera(document.getElementById('b-variable'), [['empleo', Tr('Empleo', 'Employment')], ['ingreso', Tr('Ingreso real', 'Real income')]], estado.variable, function (v) { estado.variable = v; pastillas(); todo(); });
+      PM.botonera(document.getElementById('b-medida'), [['nivel', Tr('Nivel (base = 100)', 'Level (base = 100)')], ['crec', Tr('Crecimiento', 'Growth')]], estado.medida, function (v) { estado.medida = v; todo(); });
       PM.botonera(document.getElementById('b-base'), BASES.map(function (a) { return [a, a]; }), estado.base, function (v) { estado.base = v; todo(); });
-      PM.botonera(document.getElementById('b-escala'), [['propia', 'Por panel'], ['comun', 'Común']], estado.escala, function (v) { estado.escala = v; grafico.redibujar(); });
-      L.selector(document.getElementById('b-dominio'), DOMS, estado.dominio, function (v) { estado.dominio = v; todo(); }, 'Dónde');
+      PM.botonera(document.getElementById('b-escala'), [['propia', Tr('Por panel', 'Per panel')], ['comun', Tr('Común', 'Common')]], estado.escala, function (v) { estado.escala = v; grafico.redibujar(); });
+      L.selector(document.getElementById('b-dominio'), DOMS, estado.dominio, function (v) { estado.dominio = v; todo(); }, Tr('Dónde', 'Area'));
       pastillas(); medidas(); textos(); cifras();
       var el = document.getElementById('chart'); el.innerHTML = '';
       grafico = PM.montar(el, opciones);
@@ -108,13 +108,14 @@
       el.addEventListener('pointerdown', donde, true);
       panel(estado.idx, null);
       PM.alCambiarTema(function () { cifras(); panel(estado.idx, estado.k); });
-      PM.preguntas(document.getElementById('preguntas'), PREGUNTAS);
-      document.getElementById('fuente').innerHTML = L.fuente({}, PM.fecha(T[T.length - 1])) + ' · IPC: INE' +
-        (D.estimados ? ' · <strong>2T-4T 2020</strong>: empleo de Bolivia y del área rural, estimación POPULI (línea punteada), <a href="' + D.estimados.metodologia + '" target="_blank" rel="noopener">ver metodología</a>' : '');
+      PM.preguntas(document.getElementById('preguntas'), preguntas());
+      document.getElementById('fuente').innerHTML = L.fuente({}, PM.fecha(T[T.length - 1])) + Tr(' · IPC: INE', ' · CPI: INE') +
+        (D.estimados ? Tr(' · <strong>2T-4T 2020</strong>: empleo de Bolivia y del área rural, estimación POPULI (línea punteada), <a href="' + D.estimados.metodologia + '" target="_blank" rel="noopener">ver metodología</a>',
+          ' · <strong>Q2–Q4 2020</strong>: employment for Bolivia and rural areas, POPULI estimate (dashed line), <a href="' + L.metodologia(D.estimados.metodologia) + '" target="_blank" rel="noopener">see methodology</a>') : '');
     }).catch(function (e) { console.error(e); PM.error(document.getElementById('chart')); });
 
     function pastillas() {
-      PM.pastillas(document.getElementById('pastillas'), [{ k: 'tot', nombre: estado.variable === 'empleo' ? 'Comparar con el total de ocupados' : 'Comparar con el ingreso de todos', color: { claro: C.pizarra, oscuro: C.gris }, forma: 'punteada' }],
+      PM.pastillas(document.getElementById('pastillas'), [{ k: 'tot', nombre: estado.variable === 'empleo' ? Tr('Comparar con el total de ocupados', 'Compare with total employed') : Tr('Comparar con el ingreso de todos', 'Compare with the income of all workers'), color: { claro: C.pizarra, oscuro: C.gris }, forma: 'punteada' }],
         activas, function () { grafico.redibujar(); });
     }
     function todo() { medidas(); textos(); cifras(); grafico.redibujar(); panel(Math.min(estado.idx, T.length - 1), estado.k); }
@@ -168,12 +169,14 @@
 
     function textos() {
       document.getElementById('it-base').style.display = estado.medida === 'nivel' ? '' : 'none';
-      var q = estado.variable === 'empleo' ? 'Ocupados de cada actividad' : 'Ingreso laboral mediano real de cada actividad';
+      var q = estado.variable === 'empleo' ? Tr('Ocupados de cada actividad', 'Employed in each activity') : Tr('Ingreso laboral mediano real de cada actividad', 'Real median labor income in each activity');
       document.getElementById('sub').textContent = estado.medida === 'nivel'
-        ? q + ' (promedio de cuatro trimestres) frente al de ' + estado.base + ' (= 100), en ' + nomDom() + ': sobre la raya punteada, ' + (estado.variable === 'empleo' ? 'emplea a más gente' : 'se gana más') + ' que ese año. Ordenadas de mayor a menor.'
-        : q + ': crecimiento de los últimos cuatro trimestres frente a los cuatro anteriores (%), en ' + nomDom() + '. Ordenadas de mayor a menor.';
+        ? Tr(q + ' (promedio de cuatro trimestres) frente al de ' + estado.base + ' (= 100), en ' + nomDom() + ': sobre la raya punteada, ' + (estado.variable === 'empleo' ? 'emplea a más gente' : 'se gana más') + ' que ese año. Ordenadas de mayor a menor.',
+          q + ' (four-quarter average) relative to ' + estado.base + ' (= 100), in ' + nomDom() + ': above the dashed line, ' + (estado.variable === 'empleo' ? 'it employs more people' : 'earnings are higher') + ' than in that year. Sorted from highest to lowest.')
+        : Tr(q + ': crecimiento de los últimos cuatro trimestres frente a los cuatro anteriores (%), en ' + nomDom() + '. Ordenadas de mayor a menor.',
+          q + ': growth over the last four quarters relative to the previous four (%), in ' + nomDom() + '. Sorted from highest to lowest.');
     }
-    function nomDom() { return { Urbano: 'el área urbana', Rural: 'el área rural' }[estado.dominio] || estado.dominio; }
+    function nomDom() { return Tr({ Urbano: 'el área urbana', Rural: 'el área rural' }[estado.dominio] || estado.dominio, L.lugar(estado.dominio)); }
 
     function cifras() {
       var n = T.length - 1; while (n > 0 && S.tot[n] == null) n--;
@@ -182,15 +185,15 @@
       if (!fil.length) { document.getElementById('kpis').innerHTML = ''; return; }
       var alto = fil[0], bajo = fil[fil.length - 1], debajo = fil.filter(function (x) { return x.v < m.ref; }).length;
       var p0 = primero(), serie = function (f) { var out = []; for (var i = Math.max(p0, n - 11); i <= n; i++) out.push(f(i)); return out; };
-      var verbo = estado.variable === 'empleo' ? 'emplean menos' : 'pagan menos';
+      var verbo = estado.variable === 'empleo' ? Tr('emplean menos', 'employ fewer people') : Tr('pagan menos', 'pay less');
       document.getElementById('kpis').innerHTML =
         PM.kpi({ color: TOT, rotulo: nom('tot') + ' · ' + PM.fecha(T[n]), valor: nivel ? fmt(tot) : fmt(tot),
-          delta: nivel ? PM.pct(tot - 100, 1, true) + ' frente a ' + estado.base + ' · ' + abs(NIV.tot[n]) : 'cuatro trimestres · ' + abs(NIV.tot[n]), tono: tot < m.ref ? 'malo' : 'bueno', serie: serie(function (i) { return S.tot[i]; }) }) +
-        PM.kpi({ color: C.rojo, rotulo: nivel ? 'Actividades que ' + verbo + ' que en ' + estado.base : 'Actividades en caída', valor: debajo + ' de ' + fil.length,
-          delta: (fil.length - debajo) + (nivel ? ' lo superan' : ' crecen'), tono: debajo > fil.length / 2 ? 'malo' : 'neutro',
+          delta: nivel ? PM.pct(tot - 100, 1, true) + Tr(' frente a ', ' vs. ') + estado.base + ' · ' + abs(NIV.tot[n]) : Tr('cuatro trimestres · ', 'four quarters · ') + abs(NIV.tot[n]), tono: tot < m.ref ? 'malo' : 'bueno', serie: serie(function (i) { return S.tot[i]; }) }) +
+        PM.kpi({ color: C.rojo, rotulo: nivel ? Tr('Actividades que ' + verbo + ' que en ' + estado.base, 'Activities that ' + verbo + ' than in ' + estado.base) : Tr('Actividades en caída', 'Activities declining'), valor: debajo + Tr(' de ', ' of ') + fil.length,
+          delta: (fil.length - debajo) + (nivel ? Tr(' lo superan', ' are above it') : Tr(' crecen', ' are growing')), tono: debajo > fil.length / 2 ? 'malo' : 'neutro',
           serie: serie(function (i) { return RAMAS.filter(function (k) { return S[k][i] != null && S[k][i] < m.ref; }).length; }) }) +
-        PM.kpi({ color: lado(alto.v), rotulo: (nivel ? 'Más arriba · ' : 'Mayor alza · ') + nom(alto.k), valor: fmt(alto.v), delta: abs(NIV[alto.k][n]), tono: alto.v >= m.ref ? 'bueno' : 'malo', serie: serie(function (i) { return S[alto.k][i]; }) }) +
-        PM.kpi({ color: lado(bajo.v), rotulo: (nivel ? 'Más abajo · ' : 'Mayor caída · ') + nom(bajo.k), valor: fmt(bajo.v), delta: abs(NIV[bajo.k][n]), tono: bajo.v < m.ref ? 'malo' : 'bueno', serie: serie(function (i) { return S[bajo.k][i]; }) });
+        PM.kpi({ color: lado(alto.v), rotulo: (nivel ? Tr('Más arriba · ', 'Highest · ') : Tr('Mayor alza · ', 'Largest rise · ')) + nom(alto.k), valor: fmt(alto.v), delta: abs(NIV[alto.k][n]), tono: alto.v >= m.ref ? 'bueno' : 'malo', serie: serie(function (i) { return S[alto.k][i]; }) }) +
+        PM.kpi({ color: lado(bajo.v), rotulo: (nivel ? Tr('Más abajo · ', 'Lowest · ') : Tr('Mayor caída · ', 'Largest drop · ')) + nom(bajo.k), valor: fmt(bajo.v), delta: abs(NIV[bajo.k][n]), tono: bajo.v < m.ref ? 'malo' : 'bueno', serie: serie(function (i) { return S[bajo.k][i]; }) });
     }
 
     function escala(vals, base, aire, divs) {
@@ -276,7 +279,7 @@
         var nomK = nom(k); if (ancho(nomK, fNom) > cw) nomK = nomK.split(',')[0];
         graphic.push({ type: 'text', silent: true, x: x0, y: y0, style: { text: nomK, font: fNom, fill: tinta, align: 'left', verticalAlign: 'top' } });
         if (!hay) {
-          graphic.push({ type: 'text', silent: true, x: x0, y: y0 + fN + 6, style: { text: 'pocos casos', font: '500 ' + (fC - 6) + 'px ' + PM.inter(), fill: pz, align: 'left', verticalAlign: 'top' } });
+          graphic.push({ type: 'text', silent: true, x: x0, y: y0 + fN + 6, style: { text: Tr('pocos casos', 'too few cases'), font: '500 ' + (fC - 6) + 'px ' + PM.inter(), fill: pz, align: 'left', verticalAlign: 'top' } });
           series.push({ type: 'line', id: 'l' + g, name: nom(k), xAxisIndex: g, yAxisIndex: g, data: [], silent: true });
           return;
         }
@@ -321,11 +324,11 @@
           var i = I[0] + Math.round((p.value[0] - X[I[0]]) * 4), v = S[k][i], tv = S.tot[i];
           if (v == null) return '';
           panel(i, k);
-          var h = PM.ttTitulo(nom(k) + ' · ' + PM.fecha(T[i]), nomDom() + (estado.medida === 'nivel' ? ' · cuatro trimestres · ' + estado.base + ' = 100' : ' · crecimiento de 4 trimestres'));
+          var h = PM.ttTitulo(nom(k) + ' · ' + PM.fecha(T[i]), nomDom() + (estado.medida === 'nivel' ? Tr(' · cuatro trimestres · ', ' · four quarters · ') + estado.base + ' = 100' : Tr(' · crecimiento de 4 trimestres', ' · 4-quarter growth')));
           h += PM.ttFila(TOT, nom(k), fmt(v), 'linea');
           if (k !== 'tot' && tv != null) h += PM.ttFila(pz, nom('tot'), fmt(tv), 'punteada');
-          h += PM.ttTotal(estado.variable === 'empleo' ? 'Ocupados (promedio)' : 'Ingreso mediano', abs(NIV[k][i]));
-          return ESTV[i] ? h + PM.ttPie('Incluye 2T-4T 2020: estimación POPULI (sin encuesta rural)') : h;
+          h += PM.ttTotal(estado.variable === 'empleo' ? Tr('Ocupados (promedio)', 'Employed (average)') : Tr('Ingreso mediano', 'Median income'), abs(NIV[k][i]));
+          return ESTV[i] ? h + PM.ttPie(Tr('Incluye 2T-4T 2020: estimación POPULI (sin encuesta rural)', 'Includes Q2–Q4 2020: POPULI estimate (no rural survey)')) : h;
         }, chico ? {
           axisPointer: { type: 'line' },
           position: function (pt, params, dom, rect, size) {
@@ -343,14 +346,19 @@
       var n = fil.length, bajo = fil.filter(function (x) { return x.v < m.ref; }).length, tot = S.tot[i], a = fil[0], z = fil[n - 1];
       var emp = estado.variable === 'empleo', d = tot - m.ref;
       if (estado.medida === 'nivel') {
-        var t = 'En los cuatro trimestres hasta el ' + PM.fecha(T[i]) + ', ' + (emp ? 'el número de ocupados' : 'el ingreso mediano real') + ' en ' + nomDom() + ' está <strong>' +
-          PM.pct(Math.abs(d), 1) + (d >= 0 ? ' arriba' : ' abajo') + '</strong> de ' + estado.base + ' (' + abs(NIV.tot[i]) + '). ';
-        t += bajo === 0 ? 'Todas las actividades ' + (emp ? 'emplean a más gente' : 'pagan más') + ' que en ' + estado.base + '.'
-          : '<strong>' + bajo + ' de ' + n + '</strong> actividades ' + (emp ? 'emplean a menos gente' : 'pagan menos') + ' que en ' + estado.base + '.';
-        return t + ' La más arriba: <strong>' + nom(a.k) + '</strong> (' + fmt(a.v) + '); la más abajo: <strong>' + nom(z.k) + '</strong> (' + fmt(z.v) + ').';
+        var t = Tr('En los cuatro trimestres hasta el ' + PM.fecha(T[i]) + ', ' + (emp ? 'el número de ocupados' : 'el ingreso mediano real') + ' en ' + nomDom() + ' está <strong>' +
+          PM.pct(Math.abs(d), 1) + (d >= 0 ? ' arriba' : ' abajo') + '</strong> de ' + estado.base + ' (' + abs(NIV.tot[i]) + '). ',
+          'In the four quarters through ' + PM.fecha(T[i]) + ', ' + (emp ? 'the number of employed people' : 'real median income') + ' in ' + nomDom() + ' is <strong>' +
+          PM.pct(Math.abs(d), 1) + (d >= 0 ? ' above' : ' below') + '</strong> ' + estado.base + ' (' + abs(NIV.tot[i]) + '). ');
+        t += bajo === 0 ? Tr('Todas las actividades ' + (emp ? 'emplean a más gente' : 'pagan más') + ' que en ' + estado.base + '.', 'All activities ' + (emp ? 'employ more people' : 'pay more') + ' than in ' + estado.base + '.')
+          : Tr('<strong>' + bajo + ' de ' + n + '</strong> actividades ' + (emp ? 'emplean a menos gente' : 'pagan menos') + ' que en ' + estado.base + '.', '<strong>' + bajo + ' of ' + n + '</strong> activities ' + (emp ? 'employ fewer people' : 'pay less') + ' than in ' + estado.base + '.');
+        return t + Tr(' La más arriba: <strong>' + nom(a.k) + '</strong> (' + fmt(a.v) + '); la más abajo: <strong>' + nom(z.k) + '</strong> (' + fmt(z.v) + ').',
+          ' Highest: <strong>' + nom(a.k) + '</strong> (' + fmt(a.v) + '); lowest: <strong>' + nom(z.k) + '</strong> (' + fmt(z.v) + ').');
       }
-      return (bajo === 0 ? '<strong>Todas crecen</strong>' : bajo === n ? '<strong>Todas caen</strong>' : '<strong>' + (n - bajo) + ' de ' + n + '</strong> actividades crecen y ' + bajo + ' caen') +
-        ' en ' + (emp ? 'empleo' : 'ingreso real') + ' en los últimos cuatro trimestres. Total: <strong>' + fmt(tot) + '</strong>. Entre ' + nom(a.k) + ' (' + fmt(a.v) + ') y ' + nom(z.k) + ' (' + fmt(z.v) + ').';
+      return Tr((bajo === 0 ? '<strong>Todas crecen</strong>' : bajo === n ? '<strong>Todas caen</strong>' : '<strong>' + (n - bajo) + ' de ' + n + '</strong> actividades crecen y ' + bajo + ' caen') +
+        ' en ' + (emp ? 'empleo' : 'ingreso real') + ' en los últimos cuatro trimestres. Total: <strong>' + fmt(tot) + '</strong>. Entre ' + nom(a.k) + ' (' + fmt(a.v) + ') y ' + nom(z.k) + ' (' + fmt(z.v) + ').',
+        (bajo === 0 ? '<strong>All grow</strong>' : bajo === n ? '<strong>All decline</strong>' : '<strong>' + (n - bajo) + ' of ' + n + '</strong> activities grow and ' + bajo + ' decline') +
+        ' in ' + (emp ? 'employment' : 'real income') + ' over the last four quarters. Total: <strong>' + fmt(tot) + '</strong>. From ' + nom(a.k) + ' (' + fmt(a.v) + ') to ' + nom(z.k) + ' (' + fmt(z.v) + ').');
     }
 
     function panel(i, k) {
@@ -360,35 +368,44 @@
       var fil = RAMAS.map(function (s) { return { k: s, v: S[s][i] }; }).filter(function (x) { return x.v != null; }).sort(function (a, b) { return b.v - a.v; });
       var filas = [{ k: 'tot', v: S.tot[i] }].concat(fil);
       var tope = Math.max.apply(null, filas.map(function (x) { return Math.abs(x.v - ref); })) || 1;
-      var titulo = (estado.variable === 'empleo' ? 'Empleo' : 'Ingreso real') + ' · ' + (estado.medida === 'nivel' ? estado.base + ' = 100' : 'crecimiento de 4 trimestres');
+      var titulo = (estado.variable === 'empleo' ? Tr('Empleo', 'Employment') : Tr('Ingreso real', 'Real income')) + ' · ' + (estado.medida === 'nivel' ? estado.base + ' = 100' : Tr('crecimiento de 4 trimestres', '4-quarter growth'));
       var html = '<div class="rk"><div class="rk-t">' + titulo + '</div>' + filas.map(function (x) {
         var dv = x.v - ref, w = Math.abs(dv) / tope * 50, col = PM.col(lado(x.v));
         var barra = '<i style="background:' + (x.k === 'tot' ? PM.col(TOT) : col) + ';' + (dv >= 0 ? 'left:50%' : 'left:' + (50 - w) + '%') + ';width:' + w + '%"></i>';
         return '<div class="rk-f' + (x.k === 'tot' ? ' tot' : '') + (x.k === estado.k ? ' sel' : '') + '"><span class="rk-n">' + nom(x.k) +
           '</span><span class="rk-b">' + barra + '</span><span class="rk-v" style="color:' + (x.k === 'tot' ? PM.col(TOT) : PM.tx(lado(x.v))) + '">' + fmt(x.v) + '</span></div>';
       }).join('') + '</div>';
-      document.getElementById('panel-fecha').textContent = PM.fecha(T[i]) + ' · ' + estado.dominio;
-      document.getElementById('panel').innerHTML = html + PM.ctx((ESTV[i] ? 'Esta ventana incluye trimestres de 2020 sin encuesta rural: el empleo de esos trimestres es una <strong>estimación POPULI</strong> (línea punteada). <a href="' + D.estimados.metodologia + '" target="_blank" rel="noopener">Ver metodología</a>. ' : '') + lectura(i));
+      document.getElementById('panel-fecha').textContent = PM.fecha(T[i]) + ' · ' + L.N(estado.dominio);
+      document.getElementById('panel').innerHTML = html + PM.ctx((ESTV[i] ? Tr('Esta ventana incluye trimestres de 2020 sin encuesta rural: el empleo de esos trimestres es una <strong>estimación POPULI</strong> (línea punteada). <a href="' + D.estimados.metodologia + '" target="_blank" rel="noopener">Ver metodología</a>. ',
+        'This window includes 2020 quarters with no rural survey: employment in those quarters is a <strong>POPULI estimate</strong> (dashed line). <a href="' + L.metodologia(D.estimados.metodologia) + '" target="_blank" rel="noopener">See methodology</a>. ') : '') + lectura(i));
     }
 
     PM.leyendaImagen = function () {
       var b = estado.medida === 'nivel' ? estado.base : null;
-      return [{ name: b ? 'Sobre ' + b : 'Crece', color: PM.tinte(true), forma: 'area' }, { name: b ? 'Bajo ' + b : 'Cae', color: PM.tinte(false), forma: 'area' }]
+      return [{ name: b ? Tr('Sobre ', 'Above ') + b : Tr('Crece', 'Growing'), color: PM.tinte(true), forma: 'area' }, { name: b ? Tr('Bajo ', 'Below ') + b : Tr('Cae', 'Declining'), color: PM.tinte(false), forma: 'area' }]
         .concat(activas.has('tot') ? [{ name: nom('tot'), color: PM.dk() ? '#8A9699' : '#5C6B70', forma: 'punteada' }] : []);
     };
     PM.tablaDatos = function () {
-      var u = (estado.variable === 'empleo' ? 'ocupados' : 'ingreso mediano real') + ', ' + (estado.medida === 'nivel' ? 'promedio de 4 trimestres, ' + estado.base + ' = 100' : 'crecimiento de 4 trimestres, %') + ', ' + estado.dominio;
-      return { cols: ['Período (' + u + ')'].concat(ORDEN.map(function (k) { return k === 'tot' ? nom('tot') : k; })),
+      var u = (estado.variable === 'empleo' ? Tr('ocupados', 'employed') : Tr('ingreso mediano real', 'real median income')) + ', ' + (estado.medida === 'nivel' ? Tr('promedio de 4 trimestres, ', '4-quarter average, ') + estado.base + ' = 100' : Tr('crecimiento de 4 trimestres, %', '4-quarter growth, %')) + ', ' + L.N(estado.dominio);
+      return { cols: [Tr('Período (', 'Period (') + u + ')'].concat(ORDEN.map(function (k) { return k === 'tot' ? nom('tot') : L.N(k); })),
         filas: I.map(function (i) { return [T[i]].concat(ORDEN.map(function (k) { return S[k][i] == null ? null : +S[k][i].toFixed(3); })); }) };
     };
 
-    var PREGUNTAS = [
-      ['¿Cómo se lee?', 'Cada panel es una actividad, con el <strong>total primero</strong>. La línea es la actividad; el relleno <strong>turquesa</strong> marca cuándo está sobre la base (100, o el cero en el crecimiento) y el <strong>rojo</strong> cuándo está debajo. La raya gris punteada repite el total. La cifra grande es el último dato, y los paneles van ordenados por ella. El cursor sobre un trimestre lo marca en todos los paneles, y la lectura de la derecha los ordena para ese trimestre.'],
-      ['¿Por qué el promedio de cuatro trimestres?', 'El empleo de cada actividad tiene estación (la cosecha, las fiestas de fin de año) y, en las actividades chicas, un error de muestreo alto en un solo trimestre. El promedio de los últimos cuatro trimestres quita la estación y reduce el error a la mitad. En el cuarto trimestre de cada año es el promedio del año (el punto hueco).'],
-      ['¿Qué es el ingreso de cada actividad?', 'La mediana del ingreso mensual de la ocupación principal de quienes trabajan en esa actividad, en bolivianos del 1.er trimestre de 2026 (con el IPC del INE). En las actividades donde casi todos son asalariados (educación, salud, administración pública) se acerca al salario; en el comercio o el agro, a la ganancia de un negocio por cuenta propia. El índice promedia las medianas de cuatro trimestres.'],
-      ['¿Qué año base conviene?', '<strong>2019</strong>: el último año antes de la pandemia. <strong>2017</strong>: un año de la serie larga antes de la desaceleración. <strong>' + (BASES ? BASES[BASES.length - 1] : '2025') + '</strong>: el último año completo, para ver el cambio más reciente.'],
-      ['¿Qué quiere decir «pocos casos»?', 'Para mostrar un panel, la ventana de cuatro trimestres tiene que sumar al menos ' + MIN_N + ' personas encuestadas en esa actividad. En los departamentos, las actividades chicas (minería, electricidad) suelen no llegar. Entre abril y diciembre de 2020 la encuesta no se levantó en el campo: en Bolivia y el área rural, el <strong>empleo</strong> de esos trimestres es una estimación POPULI (línea punteada); el ingreso y los totales departamentales quedan sin dato.']
+    function preguntas() {   // se arma al cargar: lleva cifras de los datos
+      var B = L.base(D.metadata);
+      return [
+      [Tr('¿Cómo se lee?', 'How do I read it?'), Tr('Cada panel es una actividad, con el <strong>total primero</strong>. La línea es la actividad; el relleno <strong>turquesa</strong> marca cuándo está sobre la base (100, o el cero en el crecimiento) y el <strong>rojo</strong> cuándo está debajo. La raya gris punteada repite el total. La cifra grande es el último dato, y los paneles van ordenados por ella. El cursor sobre un trimestre lo marca en todos los paneles, y la lectura de la derecha los ordena para ese trimestre.',
+        'Each panel is one activity, with the <strong>total first</strong>. The line is the activity; the <strong>teal</strong> fill shows when it is above the base (100, or zero for growth) and the <strong>red</strong> fill when it is below. The dashed gray line repeats the total. The large figure is the latest data point, and the panels are sorted by it. Hovering over a quarter marks it in every panel, and the reading on the right ranks them for that quarter.')],
+      [Tr('¿Por qué el promedio de cuatro trimestres?', 'Why a four-quarter average?'), Tr('El empleo de cada actividad tiene estación (la cosecha, las fiestas de fin de año) y, en las actividades chicas, un error de muestreo alto en un solo trimestre. El promedio de los últimos cuatro trimestres quita la estación y reduce el error a la mitad. En el cuarto trimestre de cada año es el promedio del año (el punto hueco).',
+        'Employment in each activity is seasonal (the harvest, the year-end holidays) and, in small activities, has a high sampling error in any single quarter. The average of the last four quarters removes seasonality and cuts the error in half. In the fourth quarter of each year it is the annual average (the hollow dot).')],
+      [Tr('¿Qué es el ingreso de cada actividad?', 'What is the income of each activity?'), Tr('La mediana del ingreso mensual de la ocupación principal de quienes trabajan en esa actividad, en ' + B.largo + ' (con el IPC del INE). En las actividades donde casi todos son asalariados (educación, salud, administración pública) se acerca al salario; en el comercio o el agro, a la ganancia de un negocio por cuenta propia. El índice promedia las medianas de cuatro trimestres.',
+        'The median monthly income from the main job of those who work in that activity, in ' + B.largo + ' (using the INE CPI). In activities where nearly everyone is a wage employee (education, health, public administration) it is close to the wage; in trade or agriculture, to the profit of an own-account business. The index averages the medians of four quarters.')],
+      [Tr('¿Qué año base conviene?', 'Which base year should I use?'), Tr('<strong>2019</strong>: el último año antes de la pandemia. <strong>2017</strong>: un año de la serie larga antes de la desaceleración. <strong>' + BASES[BASES.length - 1] + '</strong>: el último año completo, para ver el cambio más reciente.',
+        '<strong>2019</strong>: the last year before the pandemic. <strong>2017</strong>: a year in the long series before the slowdown. <strong>' + BASES[BASES.length - 1] + '</strong>: the latest full year, to see the most recent change.')],
+      [Tr('¿Qué quiere decir «pocos casos»?', 'What does “too few cases” mean?'), Tr('Para mostrar un panel, la ventana de cuatro trimestres tiene que sumar al menos ' + MIN_N + ' personas encuestadas en esa actividad. En los departamentos, las actividades chicas (minería, electricidad) suelen no llegar. Entre abril y diciembre de 2020 la encuesta no se levantó en el campo: en Bolivia y el área rural, el <strong>empleo</strong> de esos trimestres es una estimación POPULI (línea punteada); el ingreso y los totales departamentales quedan sin dato.',
+        'To show a panel, the four-quarter window must add up to at least ' + MIN_N + ' survey respondents in that activity. In the departments, small activities (mining, electricity) often fall short. Between April and December 2020 the survey was not carried out in the countryside: for Bolivia and rural areas, <strong>employment</strong> in those quarters is a POPULI estimate (dashed line); income and departmental totals have no data.')]
     ];
+    }
   })();
   </script>
 </body>

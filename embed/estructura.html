@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Estructura del empleo · Populi</title>
+  <title data-en="Structure of employment · Populi">Estructura del empleo · Populi</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -16,14 +16,14 @@
 <body>
   <div class="wrap">
     <div class="sec-hd">
-      <div class="sec-title"><span class="accent-bar"></span>¿Cómo se trabaja en Bolivia?</div>
-      <div class="sec-sub" id="sub">Composición de los ocupados por trimestre (%)</div>
+      <div class="sec-title" data-en='<span class="accent-bar"></span>How do people work in Bolivia?'><span class="accent-bar"></span>¿Cómo se trabaja en Bolivia?</div>
+      <div class="sec-sub" id="sub" data-en="Composition of the employed by quarter (%)">Composición de los ocupados por trimestre (%)</div>
     </div>
 
     <div class="hz-bar">
-      <div class="hz-item"><span class="hz-lbl">Según</span><div class="hz-grp" id="b-medida"></div></div>
-      <div class="hz-item"><span class="hz-lbl">Ámbito</span><div class="hz-grp" id="b-ambito"></div></div>
-      <div class="hz-item"><span class="hz-lbl">Rango</span><div class="hz-grp" id="b-rango"></div></div>
+      <div class="hz-item"><span class="hz-lbl" data-en="By">Según</span><div class="hz-grp" id="b-medida"></div></div>
+      <div class="hz-item"><span class="hz-lbl" data-en="Area">Ámbito</span><div class="hz-grp" id="b-ambito"></div></div>
+      <div class="hz-item"><span class="hz-lbl" data-en="Range">Rango</span><div class="hz-grp" id="b-rango"></div></div>
     </div>
 
     <div class="kpi-grid" id="kpis"></div>
@@ -31,10 +31,10 @@
     <div class="main-grid">
       <div class="chart-card">
         <div class="chart-ctrl"><div class="tog-grp" id="pastillas"></div></div>
-        <div class="grafico" id="chart"><div class="loading"><div class="spinner"></div><span>Cargando la estructura del empleo…</span></div></div>
+        <div class="grafico" id="chart"><div class="loading"><div class="spinner"></div><span data-en="Loading the structure of employment…">Cargando la estructura del empleo…</span></div></div>
       </div>
       <div class="panel">
-        <div class="panel-hd"><span class="panel-hd-t">Lectura del indicador</span><span class="panel-hd-d" id="panel-fecha"></span></div>
+        <div class="panel-hd"><span class="panel-hd-t" data-en="Reading the indicator">Lectura del indicador</span><span class="panel-hd-d" id="panel-fecha"></span></div>
         <div class="panel-body" id="panel"></div>
       </div>
     </div>
@@ -45,25 +45,26 @@
 
   <script>
   (function () {
-    var C = PM.C;
+    var C = PM.C, T = PM.t;
     // Orden de rampa (de abajo hacia arriba): rojo protagonista → cálido → fríos; «otros» arriba en gris
+    // `de` son las claves del JSON (en castellano); `nombre` es el rótulo que se muestra (L.N / T traducen)
     var MED = {
-      cat_ocup: { nombre: 'Categoría', sub: 'Composición de los ocupados por categoría ocupacional, por trimestre (%)', capas: [
-        { k: 'cp', nombre: 'Cuenta propia', de: ['Cuenta propia'], color: C.rojo },
-        { k: 'fam', nombre: 'Familiar sin remuneración', de: ['Familiar sin remuneración', 'Aprendiz sin remuneración'], color: C.naranja },
-        { k: 'asal', nombre: 'Obrero o empleado', de: ['Obrero/empleado'], color: C.turquesa },
-        { k: 'emp', nombre: 'Empleador o socio', de: ['Empleador/socio'], color: C.petroleo },
-        { k: 'otros', nombre: 'Hogar y cooperativistas', de: ['Trabajador/a del hogar', 'Cooperativista'], color: C.tenue }] },
-      tam_cat: { nombre: 'Tamaño', sub: 'Composición de los ocupados según cuántas personas trabajan en su establecimiento, por trimestre (%)', capas: [
-        { k: 't1', nombre: '1 persona', de: ['1 persona'], color: C.rojo },
-        { k: 't2', nombre: '2 a 4', de: ['2-4'], color: C.naranja },
-        { k: 't3', nombre: '5 a 9', de: ['5-9'], color: C.oro },
-        { k: 't4', nombre: '10 a 49', de: ['10-49'], color: C.turquesa },
-        { k: 't5', nombre: '50 o más', de: ['50 o más'], color: C.petroleo }] },
-      sector: { nombre: 'Sector', sub: 'Composición de los ocupados según el tipo de unidad económica (metodología del INE), por trimestre (%)', capas: [
-        { k: 'inf', nombre: 'Sector informal', de: ['Sector informal'], color: C.rojo },
-        { k: 'for', nombre: 'Sector formal', de: ['Sector formal'], color: C.turquesa },
-        { k: 'hog', nombre: 'Sector hogares', de: ['Sector hogares'], color: C.tenue }] }
+      cat_ocup: { nombre: T('Categoría', 'Status'), sub: T('Composición de los ocupados por categoría ocupacional, por trimestre (%)', 'Composition of the employed by status in employment, by quarter (%)'), capas: [
+        { k: 'cp', nombre: L.N('Cuenta propia'), de: ['Cuenta propia'], color: C.rojo },
+        { k: 'fam', nombre: L.N('Familiar sin remuneración'), de: ['Familiar sin remuneración', 'Aprendiz sin remuneración'], color: C.naranja },
+        { k: 'asal', nombre: T('Obrero o empleado', 'Employee'), de: ['Obrero/empleado'], color: C.turquesa },
+        { k: 'emp', nombre: T('Empleador o socio', 'Employer or partner'), de: ['Empleador/socio'], color: C.petroleo },
+        { k: 'otros', nombre: T('Hogar y cooperativistas', 'Domestic and cooperative workers'), de: ['Trabajador/a del hogar', 'Cooperativista'], color: C.tenue }] },
+      tam_cat: { nombre: T('Tamaño', 'Size'), sub: T('Composición de los ocupados según cuántas personas trabajan en su establecimiento, por trimestre (%)', 'Composition of the employed by how many people work in their establishment, by quarter (%)'), capas: [
+        { k: 't1', nombre: L.N('1 persona'), de: ['1 persona'], color: C.rojo },
+        { k: 't2', nombre: T('2 a 4', '2 to 4'), de: ['2-4'], color: C.naranja },
+        { k: 't3', nombre: T('5 a 9', '5 to 9'), de: ['5-9'], color: C.oro },
+        { k: 't4', nombre: T('10 a 49', '10 to 49'), de: ['10-49'], color: C.turquesa },
+        { k: 't5', nombre: L.N('50 o más'), de: ['50 o más'], color: C.petroleo }] },
+      sector: { nombre: 'Sector', sub: T('Composición de los ocupados según el tipo de unidad económica (metodología del INE), por trimestre (%)', 'Composition of the employed by type of economic unit (INE methodology), by quarter (%)'), capas: [
+        { k: 'inf', nombre: L.N('Sector informal'), de: ['Sector informal'], color: C.rojo },
+        { k: 'for', nombre: L.N('Sector formal'), de: ['Sector formal'], color: C.turquesa },
+        { k: 'hog', nombre: L.N('Sector hogares'), de: ['Sector hogares'], color: C.tenue }] }
     };
     var estado = { medida: 'cat_ocup', ambito: 'Bolivia', rango: '5a', idx: null };
     var activas = {}; Object.keys(MED).forEach(function (m) { activas[m] = new Set(MED[m].capas.map(function (c) { return c.k; })); });
@@ -87,9 +88,10 @@
 
     PM.cargar(['estructura.json']).then(function (r) {
       D = r[0]; K = D.periodos; estado.idx = K.length - 1;
+      document.getElementById('sub').textContent = med().sub;
       PM.botonera(document.getElementById('b-medida'), Object.keys(MED).map(function (k) { return [k, MED[k].nombre]; }), estado.medida,
         function (v) { estado.medida = v; document.getElementById('sub').textContent = med().sub; pastillas(); cifras(); grafico.redibujar(); panel(estado.idx); });
-      PM.botonera(document.getElementById('b-ambito'), [['Bolivia', 'Bolivia'], ['Urbano', 'Urbano'], ['Rural', 'Rural']], estado.ambito,
+      PM.botonera(document.getElementById('b-ambito'), [['Bolivia', 'Bolivia'], ['Urbano', L.N('Urbano')], ['Rural', L.N('Rural')]], estado.ambito,
         function (v) { estado.ambito = v; cifras(); grafico.redibujar(); panel(estado.idx); });
       PM.botonera(document.getElementById('b-rango'), L.RANGOS, estado.rango, function (v) { estado.rango = v; grafico.redibujar(); });
       pastillas(); cifras();
@@ -99,7 +101,7 @@
       panel(estado.idx);
       PM.alCambiarTema(function () { cifras(); panel(estado.idx); });
       PM.preguntas(document.getElementById('preguntas'), PREGUNTAS);
-      document.getElementById('fuente').innerHTML = L.fuente({}, PM.fecha(K[K.length - 1])) + L.notaEst(D).replace('línea punteada', 'barras tenues');
+      document.getElementById('fuente').innerHTML = L.fuente({}, PM.fecha(K[K.length - 1])) + L.notaEst(D).replace(T('línea punteada', 'dashed line'), T('barras tenues', 'faint bars'));
     }).catch(function (e) { console.error(e); PM.error(document.getElementById('chart')); });
 
     function pastillas() {
@@ -111,7 +113,7 @@
       var a = L.haceUnAnio(K, u);
       document.getElementById('kpis').innerHTML = med().capas.slice(0, 4).map(function (c) {
         var v = capa(c, u), b = a >= 0 ? capa(c, a) : null, d = v != null && b != null ? v - b : null;
-        return PM.kpi({ color: c.color, rotulo: c.nombre + ' · ' + PM.fecha(K[u]), valor: PM.pct(v, 1), delta: d == null ? '' : PM.flecha(d, 0.1) + ' ' + PM.pp(d) + ' en un año', tono: 'neutro',
+        return PM.kpi({ color: c.color, rotulo: c.nombre + ' · ' + PM.fecha(K[u]), valor: PM.pct(v, 1), delta: d == null ? '' : PM.flecha(d, 0.1) + ' ' + PM.pp(d) + T(' en un año', ' in a year'), tono: 'neutro',
           serie: PM.ultimos(K.map(function (k, i) { return capa(c, i); }).filter(function (x) { return x != null; }), 16) });
       }).join('');
     }
@@ -131,14 +133,14 @@
         tooltip: PM.tooltip(function (ps) {
           if (!ps.length) return '';
           var i = ps[0].dataIndex; panel(si + i);
-          var h = PM.ttTitulo(PM.fecha(KV[i]), estado.ambito + (esEst(si + i) ? ' · estimación POPULI' : ''));
+          var h = PM.ttTitulo(PM.fecha(KV[i]), L.N(estado.ambito) + (esEst(si + i) ? T(' · estimación POPULI', ' · POPULI estimate') : ''));
           ps.slice().reverse().forEach(function (p) {
             if (p.value == null) return;
             var c = med().capas.filter(function (q) { return q.nombre === p.seriesName; })[0];
             h += PM.ttFila(c.color, c.nombre, PM.pct(p.value, 1), 'area');
           });
-          if (esEst(si + i)) h += PM.ttPie('Sin encuesta rural: estimación POPULI (barras tenues)');
-          return ps.every(function (p) { return p.value == null; }) ? PM.ttTitulo(PM.fecha(KV[i]), 'Sin dato: la encuesta no se levantó en el área rural') : h;
+          if (esEst(si + i)) h += PM.ttPie(T('Sin encuesta rural: estimación POPULI (barras tenues)', 'No rural survey: POPULI estimate (faint bars)'));
+          return ps.every(function (p) { return p.value == null; }) ? PM.ttTitulo(PM.fecha(KV[i]), T('Sin dato: la encuesta no se levantó en el área rural', 'No data: the survey was not carried out in rural areas')) : h;
         }, { axisPointer: PM.sombraEje() }),
         series: series
       };
@@ -146,20 +148,33 @@
     function panel(i) {
       if (i == null || !D || i < 0) return;
       estado.idx = i;
-      document.getElementById('panel-fecha').textContent = PM.fecha(K[i]) + (esEst(i) ? ' · estimado' : '');
+      document.getElementById('panel-fecha').textContent = PM.fecha(K[i]) + (esEst(i) ? T(' · estimado', ' · estimated') : '');
       var cs = med().capas, html = cs.slice().reverse().map(function (c) { var v = capa(c, i); return v == null ? '' : PM.pb(c.color, c.nombre, PM.pct(v, 1), null); }).join(''), t;
-      if (capa(cs[0], i) == null) t = 'Sin dato para ' + estado.ambito + ' en este trimestre: entre abril y diciembre de 2020 la encuesta no se levantó en el área rural.';
-      else if (estado.medida === 'cat_ocup') t = '<strong>' + PM.num((capa(cs[0], i) + capa(cs[1], i)) / 10, 1) + ' de cada 10 ocupados</strong> trabajan por cuenta propia o como familiares sin remuneración; sólo ' + PM.pct(capa(cs[2], i), 0) + ' son obreros o empleados.';
-      else if (estado.medida === 'tam_cat') t = '<strong>' + PM.pct(capa(cs[0], i) + capa(cs[1], i), 0) + '</strong> de los ocupados trabaja solo o en establecimientos de hasta 4 personas; apenas ' + PM.pct(capa(cs[4], i), 0) + ' en unidades de 50 personas o más.';
-      else t = '<strong>' + PM.pct(capa(cs[0], i), 0) + '</strong> de los ocupados trabaja en unidades del sector informal: sin registro tributario en el régimen general, sin contabilidad y de escala reducida.';
-      if (esEst(i)) t = 'Entre abril y diciembre de 2020 el INE no levantó la encuesta en el área rural: la composición es una <strong>estimación POPULI</strong>: las partes del área rural se estiman con ' + L.METODO + ' y se suman al área urbana observada. ' + t + ' <a href="' + D.metadata.estimados.metodologia + '" target="_blank" rel="noopener">Ver metodología</a>.';
+      if (capa(cs[0], i) == null) t = T('Sin dato para ' + L.lugar(estado.ambito) + ' en este trimestre: entre abril y diciembre de 2020 la encuesta no se levantó en el área rural.',
+        'No data for ' + L.lugar(estado.ambito) + ' in this quarter: between April and December 2020 the survey was not carried out in rural areas.');
+      else if (estado.medida === 'cat_ocup') t = T('<strong>' + PM.num((capa(cs[0], i) + capa(cs[1], i)) / 10, 1) + ' de cada 10 ocupados</strong> trabajan por cuenta propia o como familiares sin remuneración; sólo ' + PM.pct(capa(cs[2], i), 0) + ' son obreros o empleados.',
+        '<strong>' + PM.num((capa(cs[0], i) + capa(cs[1], i)) / 10, 1) + ' in 10 employed people</strong> work on their own account or as unpaid family workers; only ' + PM.pct(capa(cs[2], i), 0) + ' are employees.');
+      else if (estado.medida === 'tam_cat') t = T('<strong>' + PM.pct(capa(cs[0], i) + capa(cs[1], i), 0) + '</strong> de los ocupados trabaja solo o en establecimientos de hasta 4 personas; apenas ' + PM.pct(capa(cs[4], i), 0) + ' en unidades de 50 personas o más.',
+        '<strong>' + PM.pct(capa(cs[0], i) + capa(cs[1], i), 0) + '</strong> of the employed work alone or in establishments of up to 4 people; just ' + PM.pct(capa(cs[4], i), 0) + ' in units of 50 people or more.');
+      else t = T('<strong>' + PM.pct(capa(cs[0], i), 0) + '</strong> de los ocupados trabaja en unidades del sector informal: sin registro tributario en el régimen general, sin contabilidad y de escala reducida.',
+        '<strong>' + PM.pct(capa(cs[0], i), 0) + '</strong> of the employed work in informal-sector units: not registered for tax under the general regime, without bookkeeping and small in scale.');
+      if (esEst(i)) t = T('Entre abril y diciembre de 2020 el INE no levantó la encuesta en el área rural, así que la composición es una <strong>estimación POPULI</strong>: las partes del área rural se estiman con ' + L.METODO + ' y se suman al área urbana observada. ' + t + ' <a href="' + D.metadata.estimados.metodologia + '" target="_blank" rel="noopener">Ver metodología</a>.',
+        'Between April and December 2020 INE did not run the survey in rural areas: the composition is a <strong>POPULI estimate</strong>; the rural shares are estimated using ' + L.METODO + ' and added to the observed urban area. ' + t + ' <a href="' + L.metodologia(D.metadata.estimados.metodologia) + '" target="_blank" rel="noopener">See methodology</a>.');
       document.getElementById('panel').innerHTML = html + PM.ctx(t);
     }
     var PREGUNTAS = [
-      ['¿Qué es la categoría ocupacional?', 'La relación de la persona con su trabajo: obrero o empleado (trabaja para otro por un salario), cuenta propia (trabaja solo, sin empleados), empleador o socio, familiar sin remuneración (ayuda en el negocio de un familiar sin paga), trabajador/a del hogar y cooperativista de producción. Antes de 2019 la encuesta separaba obrero y empleado; aquí se juntan con la regla del INE.'],
-      ['¿Cómo se mide el tamaño?', 'Por el número de personas que trabajan en la empresa, negocio o lugar donde la persona trabaja (incluido el dueño). Un vendedor ambulante solo cuenta como establecimiento de 1 persona.'],
-      ['¿Qué es el sector informal?', 'El tipo de unidad económica, según la metodología del INE: el Estado, las empresas públicas, las ONG y los organismos internacionales son formales; en el resto decide el NIT en el régimen general, la contabilidad y, si no se sabe, el tamaño (5 personas o más). Las trabajadoras del hogar forman el «sector hogares».'],
-      ['¿Qué son las barras tenues de 2020?', 'Entre abril y diciembre de 2020 la encuesta se levantó por teléfono y sólo en el área urbana. Para Bolivia y el área rural, esos trimestres son una <strong>estimación POPULI</strong>: la composición del área rural se estima con un promedio de modelos de series de tiempo y se suma a la urbana observada. No es un dato del INE. <a href="../metodologia.html#hueco-2020" target="_blank" rel="noopener">Metodología</a>.']
+      [T('¿Qué es la categoría ocupacional?', 'What is status in employment?'), T(
+        'La relación de la persona con su trabajo: obrero o empleado (trabaja para otro por un salario), cuenta propia (trabaja solo, sin empleados), empleador o socio, familiar sin remuneración (ayuda en el negocio de un familiar sin paga), trabajador/a del hogar y cooperativista de producción. Antes de 2019 la encuesta separaba obrero y empleado; aquí se juntan con la regla del INE.',
+        'The person\'s relationship to their work: employee (works for someone else for a wage), own-account worker (works alone, with no employees), employer or partner, unpaid family worker (helps in a relative\'s business without pay), domestic worker and production cooperative member. Before 2019 the survey separated blue-collar and white-collar employees; here they are combined following INE\'s rule.')],
+      [T('¿Cómo se mide el tamaño?', 'How is size measured?'), T(
+        'Por el número de personas que trabajan en la empresa, negocio o lugar donde la persona trabaja (incluido el dueño). Un vendedor ambulante solo cuenta como establecimiento de 1 persona.',
+        'By the number of people who work in the company, business or place where the person works (including the owner). A street vendor working alone counts as a 1-person establishment.')],
+      [T('¿Qué es el sector informal?', 'What is the informal sector?'), T(
+        'El tipo de unidad económica, según la metodología del INE: el Estado, las empresas públicas, las ONG y los organismos internacionales son formales; en el resto decide el NIT en el régimen general, la contabilidad y, si no se sabe, el tamaño (5 personas o más). Las trabajadoras del hogar forman el «sector hogares».',
+        'The type of economic unit, according to INE methodology: the government, public enterprises, NGOs and international organizations are formal; for the rest, what decides is a tax ID (NIT) under the general regime, bookkeeping and, if these are not known, size (5 people or more). Domestic workers make up the “household sector.”')],
+      [T('¿Qué son las barras tenues de 2020?', 'What are the faint bars in 2020?'), T(
+        'Entre abril y diciembre de 2020 la encuesta se levantó por teléfono y sólo en el área urbana. Para Bolivia y el área rural, esos trimestres son una <strong>estimación POPULI</strong>: la composición del área rural se estima con un promedio de modelos de series de tiempo y se suma a la urbana observada. No es un dato del INE. <a href="../metodologia.html#hueco-2020" target="_blank" rel="noopener">Metodología</a>.',
+        'Between April and December 2020 the survey was conducted by phone and only in urban areas. For Bolivia and rural areas, those quarters are a <strong>POPULI estimate</strong>: the composition of rural areas is estimated with an average of time-series models and added to the observed urban composition. It is not an INE figure. <a href="' + L.metodologia('../metodologia.html#hueco-2020') + '" target="_blank" rel="noopener">Methodology</a>.')]
     ];
   })();
   </script>

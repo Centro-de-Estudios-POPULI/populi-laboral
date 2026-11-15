@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Informalidad · Populi</title>
+  <title data-en="Informality · Populi">Informalidad · Populi</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -16,14 +16,14 @@
 <body>
   <div class="wrap">
     <div class="sec-hd">
-      <div class="sec-title"><span class="accent-bar"></span>Informalidad y protección social</div>
-      <div class="sec-sub" id="sub">Porcentaje de los ocupados, por trimestre, con la metodología de informalidad del INE</div>
+      <div class="sec-title" data-en='<span class="accent-bar"></span>Informality and social protection'><span class="accent-bar"></span>Informalidad y protección social</div>
+      <div class="sec-sub" id="sub" data-en="Percent of the employed, by quarter, using INE's informality methodology">Porcentaje de los ocupados, por trimestre, con la metodología de informalidad del INE</div>
     </div>
 
     <div class="hz-bar">
-      <div class="hz-item"><span class="hz-lbl">Medida</span><div class="hz-grp" id="b-medida"></div></div>
-      <div class="hz-item"><span class="hz-lbl">Ámbito</span><div class="hz-grp" id="b-ambito"></div></div>
-      <div class="hz-item"><span class="hz-lbl">Rango</span><div class="hz-grp" id="b-rango"></div></div>
+      <div class="hz-item"><span class="hz-lbl" data-en="Measure">Medida</span><div class="hz-grp" id="b-medida"></div></div>
+      <div class="hz-item"><span class="hz-lbl" data-en="Area">Ámbito</span><div class="hz-grp" id="b-ambito"></div></div>
+      <div class="hz-item"><span class="hz-lbl" data-en="Range">Rango</span><div class="hz-grp" id="b-rango"></div></div>
     </div>
 
     <div class="kpi-grid" id="kpis"></div>
@@ -31,10 +31,10 @@
     <div class="main-grid">
       <div class="chart-card">
         <div class="chart-ctrl"><div class="tog-grp" id="pastillas"></div></div>
-        <div class="grafico" id="chart"><div class="loading"><div class="spinner"></div><span>Cargando la informalidad…</span></div></div>
+        <div class="grafico" id="chart"><div class="loading"><div class="spinner"></div><span data-en="Loading informality…">Cargando la informalidad…</span></div></div>
       </div>
       <div class="panel">
-        <div class="panel-hd"><span class="panel-hd-t">Lectura del indicador</span><span class="panel-hd-d" id="panel-fecha"></span></div>
+        <div class="panel-hd"><span class="panel-hd-t" data-en="Reading the indicator">Lectura del indicador</span><span class="panel-hd-d" id="panel-fecha"></span></div>
         <div class="panel-body" id="panel"></div>
       </div>
     </div>
@@ -45,20 +45,20 @@
 
   <script>
   (function () {
-    var C = PM.C;
+    var C = PM.C, T = PM.t;
     var MEDIDAS = {
-      informalidad: { sub: 'Porcentaje de los ocupados, por trimestre, con la metodología de informalidad del INE', series: [
-        { k: 'toi', nombre: 'Ocupación informal', largo: 'Ocupación informal', color: C.rojo, ancho: 2.5,
-          desc: 'Puestos sin aporte a la seguridad social ni seguro de salud (asalariados) o en negocios sin NIT ni contabilidad (independientes)' },
-        { k: 'tosi', nombre: 'Sector informal', largo: 'Ocupados en el sector informal', color: C.oro, ancho: 2,
-          desc: 'Trabajan en unidades económicas sin registro, sin contabilidad y de escala reducida' }] },
-      proteccion: { sub: 'Porcentaje, por trimestre: el seguro de salud se pregunta sólo a los asalariados; el aporte, a todos los ocupados', series: [
-        { k: 'asal_seguro_salud', nombre: 'Asalariados con seguro de salud', largo: 'Asalariados con seguro de salud', color: C.turquesa, ancho: 2.5,
-          desc: 'Obreros y empleados con seguro de salud por su trabajo. No se preguntó entre abril de 2020 y 2021' },
-        { k: 'cotiza_gestora', nombre: 'Ocupados que aportan a la Gestora', largo: 'Ocupados que aportan a la Gestora (AFP)', color: { claro: C.petroleo, oscuro: C.menta }, ancho: 2,
-          desc: 'El empleador aporta o la persona aporta de forma independiente. Pregunta disponible desde 2022' },
-        { k: 'asalariados_pct', nombre: 'Asalariados', largo: 'Asalariados (% de los ocupados)', color: C.pizarra, ancho: 1.5,
-          desc: 'Obreros y empleados: el universo al que se le pregunta por el seguro de salud' }] }
+      informalidad: { sub: T('Porcentaje de los ocupados, por trimestre, con la metodología de informalidad del INE', 'Percent of the employed, by quarter, using INE\'s informality methodology'), series: [
+        { k: 'toi', nombre: T('Ocupación informal', 'Informal employment'), largo: T('Ocupación informal', 'Informal employment'), color: C.rojo, ancho: 2.5,
+          desc: T('Puestos sin aporte a la seguridad social ni seguro de salud (asalariados) o en negocios sin NIT ni contabilidad (independientes)', 'Jobs without social security contributions or health insurance (wage employees), or in businesses without a tax ID (NIT) or bookkeeping (self-employed)') },
+        { k: 'tosi', nombre: T('Sector informal', 'Informal sector'), largo: T('Ocupados en el sector informal', 'Employed in the informal sector'), color: C.oro, ancho: 2,
+          desc: T('Trabajan en unidades económicas sin registro, sin contabilidad y de escala reducida', 'Working in economic units that are unregistered, keep no books and operate on a small scale') }] },
+      proteccion: { sub: T('Porcentaje, por trimestre: el seguro de salud se pregunta sólo a los asalariados; el aporte, a todos los ocupados', 'Percent, by quarter: health insurance is asked only of wage employees; pension contributions, of all the employed'), series: [
+        { k: 'asal_seguro_salud', nombre: T('Asalariados con seguro de salud', 'Wage employees with health insurance'), largo: T('Asalariados con seguro de salud', 'Wage employees with health insurance'), color: C.turquesa, ancho: 2.5,
+          desc: T('Obreros y empleados con seguro de salud por su trabajo. No se preguntó entre abril de 2020 y 2021', 'Blue- and white-collar employees with health insurance through their job. Not asked between April 2020 and 2021') },
+        { k: 'cotiza_gestora', nombre: T('Ocupados que aportan a la Gestora', 'Employed contributing to the Gestora'), largo: T('Ocupados que aportan a la Gestora (AFP)', 'Employed contributing to the Gestora (AFP)'), color: { claro: C.petroleo, oscuro: C.menta }, ancho: 2,
+          desc: T('El empleador aporta o la persona aporta de forma independiente. Pregunta disponible desde 2022', 'The employer contributes or the person contributes independently. Question available since 2022') },
+        { k: 'asalariados_pct', nombre: T('Asalariados', 'Wage employees'), largo: T('Asalariados (% de los ocupados)', 'Wage employees (% of the employed)'), color: C.pizarra, ancho: 1.5,
+          desc: T('Obreros y empleados: el universo al que se le pregunta por el seguro de salud', 'Blue- and white-collar employees: the group that is asked about health insurance') }] }
     };
     var estado = { medida: 'informalidad', ambito: 'Bolivia', rango: 'todo', idx: null };
     var activas = { informalidad: new Set(['toi', 'tosi']), proteccion: new Set(['asal_seguro_salud', 'cotiza_gestora']) };
@@ -66,11 +66,12 @@
     var S = function (k) { return D.dominios[estado.ambito][k]; };
     var med = function () { return MEDIDAS[estado.medida]; };
 
-    PM.cargar(['trimestral.json']).then(function (r) {
-      D = r[0]; M = D.metadata; K = D.periodos; estado.idx = K.length - 1;
-      PM.botonera(document.getElementById('b-medida'), [['informalidad', 'Informalidad'], ['proteccion', 'Protección social']], estado.medida, function (v) {
+    var VAL = {};   // validación contra el INE (metodologia.json)
+    PM.cargar(['trimestral.json', 'metodologia.json']).then(function (r) {
+      D = r[0]; M = D.metadata; K = D.periodos; VAL = r[1].validacion_ine || {}; estado.idx = K.length - 1;
+      PM.botonera(document.getElementById('b-medida'), [['informalidad', T('Informalidad', 'Informality')], ['proteccion', T('Protección social', 'Social protection')]], estado.medida, function (v) {
         estado.medida = v; document.getElementById('sub').textContent = med().sub; pastillas(); grafico.redibujar(); panel(estado.idx); });
-      L.selector(document.getElementById('b-ambito'), L.AMBITOS_SEL, estado.ambito, function (v) { estado.ambito = v; cifras(); grafico.redibujar(); panel(estado.idx); }, 'Ámbito');
+      L.selector(document.getElementById('b-ambito'), L.AMBITOS_SEL, estado.ambito, function (v) { estado.ambito = v; cifras(); grafico.redibujar(); panel(estado.idx); }, T('Ámbito', 'Area'));
       PM.botonera(document.getElementById('b-rango'), L.RANGOS, estado.rango, function (v) { estado.rango = v; grafico.redibujar(); });
       pastillas(); cifras();
       var el = document.getElementById('chart'); el.innerHTML = '';
@@ -78,7 +79,7 @@
       grafico.chart.on('click', function (p) { if (p.dataIndex != null) panel(si + p.dataIndex); });
       panel(estado.idx);
       PM.alCambiarTema(function () { cifras(); panel(estado.idx); });
-      PM.preguntas(document.getElementById('preguntas'), PREGUNTAS);
+      PM.preguntas(document.getElementById('preguntas'), preguntas());
       document.getElementById('fuente').innerHTML = L.fuente(M, L.fechaP(M, M.ultimo_dato)) + L.notaEst(D);
     }).catch(function (e) { console.error(e); PM.error(document.getElementById('chart')); });
 
@@ -93,13 +94,13 @@
         var a = L.haceUnAnio(K, u), d = a >= 0 && s[a] != null ? s[u] - s[a] : null;
         var tono = d == null || Math.abs(d) < 0.05 ? 'neutro' : (d < 0) === mejorBaja ? 'bueno' : 'malo';
         return PM.kpi({ color: color, rotulo: rot + ' · ' + L.fechaP(M, K[u]), valor: PM.pct(s[u], 1),
-          delta: d == null ? 'sin dato del año anterior' : PM.flecha(d, 0.05) + ' ' + PM.pp(d) + ' en un año', tono: tono,
+          delta: d == null ? T('sin dato del año anterior', 'no data for the year before') : PM.flecha(d, 0.05) + ' ' + PM.pp(d) + T(' en un año', ' in a year'), tono: tono,
           serie: PM.ultimos(s.filter(function (v) { return v != null; }), 16) });
       };
       document.getElementById('kpis').innerHTML =
-        tarjeta('toi', 'Ocupación informal', true, C.rojo) + tarjeta('tosi', 'Sector informal', true, C.oro) +
-        tarjeta('asal_seguro_salud', 'Asalariados con seguro de salud', false, C.turquesa) +
-        tarjeta('cotiza_gestora', 'Aportan a la Gestora', false, MEDIDAS.proteccion.series[1].color);
+        tarjeta('toi', T('Ocupación informal', 'Informal employment'), true, C.rojo) + tarjeta('tosi', T('Sector informal', 'Informal sector'), true, C.oro) +
+        tarjeta('asal_seguro_salud', T('Asalariados con seguro de salud', 'Wage employees with health insurance'), false, C.turquesa) +
+        tarjeta('cotiza_gestora', T('Aportan a la Gestora', 'Contributing to the Gestora'), false, MEDIDAS.proteccion.series[1].color);
     }
 
     function opciones() {
@@ -123,7 +124,7 @@
         tooltip: PM.tooltip(function (ps) {
           if (!ps.length) return '';
           var i = ps[0].dataIndex; panel(si + i);
-          var h = PM.ttTitulo(L.fechaP(M, KV[i]) + (L.hayEst(D, estado.ambito, KV[i]) ? ' · estimado' : ''), estado.ambito);
+          var h = PM.ttTitulo(L.fechaP(M, KV[i]) + (L.hayEst(D, estado.ambito, KV[i]) ? T(' · estimado', ' · estimated') : ''), L.N(estado.ambito));
           ps.forEach(function (p) {
             if (p.value == null || /^_/.test(p.seriesName)) return;
             var c = med().series.filter(function (q) { return q.nombre === p.seriesName; })[0];
@@ -131,7 +132,7 @@
           });
           h += L.ttEst(D, estado.ambito, KV[i], med().series.filter(function (s) { return activas[estado.medida].has(s.k); }).map(function (s) {
             return { k: s.k, nombre: s.nombre, color: s.color, fmt: function (v) { return PM.pct(v, 1); } }; }));
-          if (/2020-T[234]|2021-T[1234]/.test(KV[i]) && estado.medida === 'informalidad') h += PM.ttPie('Cuestionario corto de pandemia: informalidad aproximada (±1 pp)');
+          if (/2020-T[234]|2021-T[1234]/.test(KV[i]) && estado.medida === 'informalidad') h += PM.ttPie(T('Cuestionario corto de pandemia: informalidad aproximada (±1 pp)', 'Short pandemic questionnaire: approximate informality (±1 pp)'));
           return h;
         }),
         series: series
@@ -143,33 +144,51 @@
       estado.idx = i;
       var k = K[i], esEst = L.hayEst(D, estado.ambito, k);
       var v = function (x) { return L.valor(D, estado.ambito, x, K, i).v; };
-      var ic = function (x) { var e = L.est(D, estado.ambito, x, k); return e ? ' Estimación POPULI; intervalo de 95 %: ' + PM.pct(e.li, 1) + '–' + PM.pct(e.ls, 1) + '.' : ''; };
-      document.getElementById('panel-fecha').textContent = L.fechaP(M, k) + (esEst ? ' · estimado' : '');
+      var ic = function (x) { var e = L.est(D, estado.ambito, x, k); return e ? T(' Estimación POPULI; intervalo de 95 %: ', ' POPULI estimate; 95% interval: ') + PM.pct(e.li, 1) + '–' + PM.pct(e.ls, 1) + '.' : ''; };
+      document.getElementById('panel-fecha').textContent = L.fechaP(M, k) + (esEst ? T(' · estimado', ' · estimated') : '');
       var todas = MEDIDAS.informalidad.series.concat(MEDIDAS.proteccion.series);
       var html = todas.filter(function (s) { return v(s.k) != null; }).map(function (s) { return PM.pb(s.color, s.largo, PM.pct(v(s.k), 1), s.desc + (esEst ? '.' + ic(s.k) : '')); }).join('');
       var toi = v('toi'), txt;
-      if (esEst && toi != null) txt = 'Entre abril y diciembre de 2020 el INE no levantó la encuesta en el área rural: la cifra es una <strong>estimación POPULI</strong> con ' + L.METODO + '. Ocupación informal: <strong>' +
-        PM.pct(toi, 1) + '</strong>. <a href="' + M.estimados.metodologia + '" target="_blank" rel="noopener">Ver metodología</a>.';
-      else if (toi == null) txt = 'Sin dato para ' + estado.ambito + ' en este trimestre.';
+      if (esEst && toi != null) txt = T('Entre abril y diciembre de 2020 el INE no levantó la encuesta en el área rural: la cifra es una <strong>estimación POPULI</strong> con ' + L.METODO + '. Ocupación informal: <strong>' +
+        PM.pct(toi, 1) + '</strong>. <a href="' + M.estimados.metodologia + '" target="_blank" rel="noopener">Ver metodología</a>.',
+        'Between April and December 2020 INE did not run the survey in rural areas: the figure is a <strong>POPULI estimate</strong> using ' + L.METODO + '. Informal employment: <strong>' +
+        PM.pct(toi, 1) + '</strong>. <a href="' + L.metodologia(M.estimados.metodologia) + '" target="_blank" rel="noopener">See methodology</a>.');
+      else if (toi == null) txt = T('Sin dato para ' + L.lugar(estado.ambito) + ' en este trimestre.', 'No data for ' + L.lugar(estado.ambito) + ' in this quarter.');
       else {
-        txt = 'En ' + estado.ambito + ', <strong>' + PM.num(toi / 10, 1) + ' de cada 10 ocupados</strong> tienen un empleo informal.';
+        txt = T('En ' + L.lugar(estado.ambito) + ', <strong>' + PM.num(toi / 10, 1) + ' de cada 10 ocupados</strong> tienen un empleo informal.',
+          'In ' + L.lugar(estado.ambito) + ', <strong>' + PM.num(toi / 10, 1) + ' in 10 employed people</strong> have an informal job.');
         var a = L.haceUnAnio(K, i);
         if (a >= 0 && S('toi')[a] != null) {
           var d = toi - S('toi')[a];
-          txt += ' Frente a un año antes, la informalidad ' + (Math.abs(d) < 0.1 ? 'se mantiene' : (d > 0 ? 'sube ' : 'baja ') + PM.num(Math.abs(d), 1) + ' pp') + '.';
+          txt += T(' Frente a un año antes, la informalidad ' + (Math.abs(d) < 0.1 ? 'se mantiene' : (d > 0 ? 'sube ' : 'baja ') + PM.num(Math.abs(d), 1) + ' pp') + '.',
+            ' Compared with a year earlier, informality ' + (Math.abs(d) < 0.1 ? 'is unchanged' : (d > 0 ? 'is up ' : 'is down ') + PM.num(Math.abs(d), 1) + ' pp') + '.');
         }
-        if (v('asal_seguro_salud') != null) txt += ' Entre los asalariados, sólo <strong>' + PM.pct(v('asal_seguro_salud'), 0) + '</strong> tiene seguro de salud por su trabajo.';
+        if (v('asal_seguro_salud') != null) txt += T(' Entre los asalariados, sólo <strong>' + PM.pct(v('asal_seguro_salud'), 0) + '</strong> tiene seguro de salud por su trabajo.',
+          ' Among wage employees, only <strong>' + PM.pct(v('asal_seguro_salud'), 0) + '</strong> have health insurance through their job.');
       }
       document.getElementById('panel').innerHTML = html + PM.ctx(txt);
     }
 
-    var PREGUNTAS = [
-      ['¿Ocupación informal o sector informal?', 'Son dos preguntas distintas. El <strong>sector informal</strong> mira la <strong>unidad económica</strong>: negocios sin NIT en el régimen general, sin contabilidad y pequeños. La <strong>ocupación informal</strong> mira el <strong>puesto de trabajo</strong>: un asalariado de una empresa formal sin aporte ni seguro de salud tiene un empleo informal en el sector formal. Por eso la ocupación informal (≈86 %) es mayor que el sector informal (≈78 %).'],
-      ['¿Cómo se calcula?', 'Con la «Propuesta metodológica para medir la informalidad en Bolivia» del INE (2025-26), que sigue a la 21.ª Conferencia de Estadísticos del Trabajo. Asalariados: formales si aportan a la Gestora (antes AFP) o tienen seguro de salud. Independientes: formales si el negocio tiene NIT en el régimen general o lleva contabilidad. Familiares sin remuneración y aprendices: informales. El cálculo de POPULI desde el microdato coincide con las cifras oficiales con una diferencia mediana de 0,01 pp.'],
-      ['¿Qué pasa entre 2020 y 2021?', 'En el cuestionario corto de pandemia (abril de 2020 a fines de 2021) no se preguntó por el seguro de salud ni por la contabilidad. Para esos trimestres se usa un criterio de respaldo calibrado contra el INE (afiliación a la AFP o contrato escrito; NIT o 5 personas o más), que queda a ±0,3 pp en el total y a ±1 pp en el área urbana. Para Bolivia y el área rural de 2T-4T 2020 (sin encuesta en el campo), la línea punteada es una <strong>estimación POPULI</strong> con su intervalo de 95 %: <a href="../metodologia.html#hueco-2020" target="_blank" rel="noopener">metodología</a>.'],
-      ['¿Por qué el seguro de salud sólo para asalariados?', 'La ECE pregunta por el seguro de salud, el aguinaldo, las vacaciones y el contrato sólo a obreros y empleados. Medirlo sobre todos los ocupados lo subestimaría, porque contaría como «sin seguro» a quien nunca fue preguntado. Ojo: entre 2018 y 2019 cambió el cuestionario y la serie tiene un escalón.'],
-      ['¿Qué es aportar a la Gestora?', 'Desde 2022 la encuesta pregunta si la persona está aportando a la Gestora Pública de la Seguridad Social de Largo Plazo (antes, a las AFP): sea porque el empleador hace el aporte o porque aporta de forma independiente. Es el indicador más directo de quién acumula una jubilación.']
+    function preguntas() {   // se arma al cargar: lleva cifras de los datos
+      var ult = function (k) { var s = D.dominios.Bolivia[k]; return PM.pct(s[L.ultimo(s)], 0); };
+      return [
+      [T('¿Ocupación informal o sector informal?', 'Informal employment or the informal sector?'), T(
+        'Son dos preguntas distintas. El <strong>sector informal</strong> mira la <strong>unidad económica</strong>: negocios sin NIT en el régimen general, sin contabilidad y pequeños. La <strong>ocupación informal</strong> mira el <strong>puesto de trabajo</strong>: un asalariado de una empresa formal sin aporte ni seguro de salud tiene un empleo informal en el sector formal. Por eso la ocupación informal (≈' + ult('toi') + ') es mayor que el sector informal (≈' + ult('tosi') + ').',
+        'They are two different questions. The <strong>informal sector</strong> looks at the <strong>economic unit</strong>: businesses without a tax ID (NIT) under the general tax regime, without bookkeeping and small. <strong>Informal employment</strong> looks at the <strong>job</strong>: a wage employee of a formal company with no pension contributions or health insurance holds an informal job in the formal sector. That is why informal employment (≈' + ult('toi') + ') is higher than employment in the informal sector (≈' + ult('tosi') + ').')],
+      [T('¿Cómo se calcula?', 'How is it calculated?'), T(
+        'Con la «Propuesta metodológica para medir la informalidad en Bolivia» del INE (2025-26), que sigue a la 21.ª Conferencia de Estadísticos del Trabajo. Asalariados: formales si aportan a la Gestora (antes AFP) o tienen seguro de salud. Independientes: formales si el negocio tiene NIT en el régimen general o lleva contabilidad. Familiares sin remuneración y aprendices: informales. El cálculo de POPULI desde el microdato coincide con las cifras oficiales con una diferencia mediana de ' + PM.num(VAL.informalidad_dif_mediana, 2) + ' pp.',
+        'With INE\'s “Propuesta metodológica para medir la informalidad en Bolivia” (Methodological proposal for measuring informality in Bolivia, 2025-26), which follows the 21st International Conference of Labour Statisticians. Wage employees: formal if they contribute to the Gestora (formerly the AFPs) or have health insurance. Self-employed: formal if the business has a NIT under the general tax regime or keeps books. Unpaid family workers and apprentices: informal. POPULI\'s calculation from the microdata matches the official figures with a median difference of ' + PM.num(VAL.informalidad_dif_mediana, 2) + ' pp.')],
+      [T('¿Qué pasa entre 2020 y 2021?', 'What happens between 2020 and 2021?'), T(
+        'En el cuestionario corto de pandemia (abril de 2020 a fines de 2021) no se preguntó por el seguro de salud ni por la contabilidad. Para esos trimestres se usa un criterio de respaldo calibrado contra el INE (afiliación a la AFP o contrato escrito; NIT o 5 personas o más), que queda a ±0,3 pp en el total y a ±1 pp en el área urbana. Para Bolivia y el área rural de 2T-4T 2020 (sin encuesta en el campo), la línea punteada es una <strong>estimación POPULI</strong> con su intervalo de 95 %: <a href="../metodologia.html#hueco-2020" target="_blank" rel="noopener">metodología</a>.',
+        'The short pandemic questionnaire (April 2020 to late 2021) did not ask about health insurance or bookkeeping. For those quarters a fallback criterion calibrated against INE is used (AFP membership or a written contract; NIT or 5 or more people), which stays within ±0.3 pp for the total and ±1 pp for urban areas. For Bolivia and rural areas in Q2–Q4 2020 (no survey in the countryside), the dashed line is a <strong>POPULI estimate</strong> with its 95% interval: <a href="' + L.metodologia('../metodologia.html#hueco-2020') + '" target="_blank" rel="noopener">methodology</a>.')],
+      [T('¿Por qué el seguro de salud sólo para asalariados?', 'Why health insurance only for wage employees?'), T(
+        'La ECE pregunta por el seguro de salud, el aguinaldo, las vacaciones y el contrato sólo a obreros y empleados. Medirlo sobre todos los ocupados lo subestimaría, porque contaría como «sin seguro» a quien nunca fue preguntado. Ojo: entre 2018 y 2019 cambió el cuestionario y la serie tiene un escalón.',
+        'The ECE asks about health insurance, the year-end bonus (aguinaldo), paid vacation and the contract only of blue- and white-collar employees. Measuring it over all the employed would understate it, because it would count people who were never asked as “uninsured.” Note: the questionnaire changed between 2018 and 2019, and the series has a level break.')],
+      [T('¿Qué es aportar a la Gestora?', 'What does contributing to the Gestora mean?'), T(
+        'Desde 2022 la encuesta pregunta si la persona está aportando a la Gestora Pública de la Seguridad Social de Largo Plazo (antes, a las AFP): sea porque el empleador hace el aporte o porque aporta de forma independiente. Es el indicador más directo de quién acumula una jubilación.',
+        'Since 2022 the survey asks whether the person is contributing to the Gestora Pública de la Seguridad Social de Largo Plazo, the public pension manager (formerly, to the AFPs): either because the employer makes the contribution or because the person contributes independently. It is the most direct indicator of who is building up a pension.')]
     ];
+    }
   })();
   </script>
 </body>

@@ -4,6 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mercado Laboral · Populi</title>
+  <script>
+    // ?lang=en → inglés: cada texto va en pares lang="es" / lang="en" y el CSS oculta el otro idioma
+    if ((new URLSearchParams(location.search).get('lang') || '').toLowerCase() === 'en') {
+      document.documentElement.lang = 'en';
+      document.title = 'Labor Market · Populi';
+    }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -30,39 +37,59 @@
     .footer{text-align:center;padding:32px 16px;font-size:0.8rem;color:var(--muted);border-top:1px solid var(--border);margin-top:48px}
     .footer a{color:var(--populi);text-decoration:none;font-weight:600}
     .footer a:hover{text-decoration:underline}
+    html[lang="es"] [lang="en"]{display:none} html[lang="en"] [lang="es"]{display:none}
   </style>
 </head>
 <body>
   <div class="hero">
+    <div lang="es">
     <span class="badge">INE · Encuesta Continua de Empleo · microdato trimestral</span>
     <h1>Mercado Laboral de Bolivia</h1>
     <p>Desocupación y subutilización, informalidad, ingresos reales, departamentos, actividades económicas, estructura del empleo y flujos entre trimestres, calculados desde el microdato de la Encuesta Continua de Empleo del INE (2015-2026).</p>
+    </div>
+    <div lang="en">
+    <span class="badge">INE · Continuous Employment Survey · quarterly microdata</span>
+    <h1>Bolivia's Labor Market</h1>
+    <p>Unemployment and underutilization, informality, real income, departments, economic activities, structure of employment and flows between quarters, calculated from the microdata of INE's Continuous Employment Survey (2015–2026).</p>
+    </div>
   </div>
 
   <div class="wrap">
     <nav class="nav">
-      <a href="#desocupacion">Desocupación</a>
-      <a href="#informalidad">Informalidad</a>
-      <a href="#ingresos">Ingresos</a>
-      <a href="#departamentos">Departamentos</a>
-      <a href="#sectores">Actividades</a>
-      <a href="#actividades-tiempo">Actividades en el tiempo</a>
-      <a href="#estructura">Estructura</a>
-      <a href="#flujos">Flujos</a>
-      <a href="metodologia.html">Metodología</a>
+      <a href="#desocupacion"><span lang="es">Desocupación</span><span lang="en">Unemployment</span></a>
+      <a href="#informalidad"><span lang="es">Informalidad</span><span lang="en">Informality</span></a>
+      <a href="#ingresos"><span lang="es">Ingresos</span><span lang="en">Income</span></a>
+      <a href="#departamentos"><span lang="es">Departamentos</span><span lang="en">Departments</span></a>
+      <a href="#sectores"><span lang="es">Actividades</span><span lang="en">Activities</span></a>
+      <a href="#actividades-tiempo"><span lang="es">Actividades en el tiempo</span><span lang="en">Activities over time</span></a>
+      <a href="#estructura"><span lang="es">Estructura</span><span lang="en">Structure</span></a>
+      <a href="#flujos"><span lang="es">Flujos</span><span lang="en">Flows</span></a>
+      <a href="metodologia.html" lang="es">Metodología</a>
+      <a href="metodologia.html?lang=en" lang="en">Methodology</a>
     </nav>
 
     <div class="grid">
-      <div class="embed-card" id="desocupacion"><iframe src="embed/desocupacion.html" loading="lazy" title="Desocupación y subutilización"></iframe></div>
-      <div class="embed-card" id="informalidad"><iframe src="embed/informalidad.html" loading="lazy" title="Informalidad y protección social"></iframe></div>
-      <div class="embed-card" id="ingresos"><iframe src="embed/ingresos.html" loading="lazy" title="Ingresos laborales"></iframe></div>
-      <div class="embed-card" id="departamentos"><iframe src="embed/departamentos.html" loading="lazy" title="El mercado laboral por departamento"></iframe></div>
-      <div class="embed-card" id="sectores"><iframe src="embed/sectores.html" loading="lazy" title="Empleo por actividad económica"></iframe></div>
-      <div class="embed-card" id="actividades-tiempo"><iframe src="embed/actividades_paneles.html" loading="lazy" title="Cada actividad en el tiempo"></iframe></div>
-      <div class="embed-card" id="estructura"><iframe src="embed/estructura.html" loading="lazy" title="Estructura del empleo"></iframe></div>
-      <div class="embed-card" id="flujos"><iframe src="embed/flujos.html" loading="lazy" title="Entradas y salidas del empleo"></iframe></div>
+      <div class="embed-card" id="desocupacion"><iframe src="embed/desocupacion.html" loading="lazy" title="Desocupación y subutilización" data-en-title="Unemployment and underutilization"></iframe></div>
+      <div class="embed-card" id="informalidad"><iframe src="embed/informalidad.html" loading="lazy" title="Informalidad y protección social" data-en-title="Informality and social protection"></iframe></div>
+      <div class="embed-card" id="ingresos"><iframe src="embed/ingresos.html" loading="lazy" title="Ingresos laborales" data-en-title="Labor income"></iframe></div>
+      <div class="embed-card" id="departamentos"><iframe src="embed/departamentos.html" loading="lazy" title="El mercado laboral por departamento" data-en-title="The labor market by department"></iframe></div>
+      <div class="embed-card" id="sectores"><iframe src="embed/sectores.html" loading="lazy" title="Empleo por actividad económica" data-en-title="Employment by economic activity"></iframe></div>
+      <div class="embed-card" id="actividades-tiempo"><iframe src="embed/actividades_paneles.html" loading="lazy" title="Cada actividad en el tiempo" data-en-title="Each activity over time"></iframe></div>
+      <div class="embed-card" id="estructura"><iframe src="embed/estructura.html" loading="lazy" title="Estructura del empleo" data-en-title="Structure of employment"></iframe></div>
+      <div class="embed-card" id="flujos"><iframe src="embed/flujos.html" loading="lazy" title="Entradas y salidas del empleo" data-en-title="Flows into and out of employment"></iframe></div>
     </div>
   </div>
+
+  <script>
+    // ?lang=en: cada gráfico se pide en inglés y su título (lector de pantalla) también va en inglés
+    if (document.documentElement.lang === 'en') {
+      Array.prototype.forEach.call(document.querySelectorAll('.embed-card iframe'), function (f) {
+        var src = f.getAttribute('src');
+        f.setAttribute('src', src.replace(/(#|$)/, (src.indexOf('?') >= 0 ? '&' : '?') + 'lang=en$1'));
+        if (f.getAttribute('data-en-title')) f.title = f.getAttribute('data-en-title');
+      });
+    }
+  </script>
 
   <script>
     // Alto automático de los gráficos (protocolo POPULI, el mismo del sitio y del Monitor Monetario)
@@ -84,9 +111,11 @@
   </script>
 
   <div class="footer">
-    Fuente: <a href="https://www.ine.gob.bo/index.php/metadatos-y-microdatos/" target="_blank" rel="noopener">INE, Encuesta Continua de Empleo</a> &middot;
+    <span lang="es">Fuente: <a href="https://www.ine.gob.bo/index.php/metadatos-y-microdatos/" target="_blank" rel="noopener">INE, Encuesta Continua de Empleo</a> &middot;
     Elaboración: <a href="https://populi.org.bo" target="_blank" rel="noopener">Centro de Estudios POPULI</a> &middot;
-    <a href="metodologia.html">Metodología</a>
+    <a href="metodologia.html">Metodología</a></span><span lang="en">Source: <a href="https://www.ine.gob.bo/index.php/metadatos-y-microdatos/" target="_blank" rel="noopener">INE, Continuous Employment Survey</a> &middot;
+    Analysis: <a href="https://populi.org.bo/en/" target="_blank" rel="noopener">Centro de Estudios POPULI</a> &middot;
+    <a href="metodologia.html?lang=en">Methodology</a></span>
   </div>
 </body>
 </html>

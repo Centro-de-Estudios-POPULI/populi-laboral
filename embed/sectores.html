@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Empleo por actividad económica · Populi</title>
+  <title data-en="Employment by economic activity · Populi">Empleo por actividad económica · Populi</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -23,24 +23,24 @@
 <body>
   <div class="wrap">
     <div class="sec-hd">
-      <div class="sec-title"><span class="accent-bar"></span>Empleo por actividad económica</div>
-      <div class="sec-sub" id="sub">Las 14 grandes ramas de actividad, por departamento</div>
+      <div class="sec-title" data-en='<span class="accent-bar"></span>Employment by economic activity'><span class="accent-bar"></span>Empleo por actividad económica</div>
+      <div class="sec-sub" id="sub" data-en="The 14 major economic activities, by department">Las 14 grandes ramas de actividad, por departamento</div>
     </div>
 
     <div class="hz-bar">
-      <div class="hz-item"><span class="hz-lbl">Indicador</span><div class="hz-grp" id="b-medida"></div></div>
-      <div class="hz-item"><span class="hz-lbl">Dónde</span><div class="hz-grp" id="b-dominio"></div></div>
-      <div class="hz-item"><span class="hz-lbl">Periodo</span><div class="hz-grp" id="b-periodo"></div></div>
+      <div class="hz-item"><span class="hz-lbl" data-en="Indicator">Indicador</span><div class="hz-grp" id="b-medida"></div></div>
+      <div class="hz-item"><span class="hz-lbl" data-en="Area">Dónde</span><div class="hz-grp" id="b-dominio"></div></div>
+      <div class="hz-item"><span class="hz-lbl" data-en="Period">Periodo</span><div class="hz-grp" id="b-periodo"></div></div>
     </div>
 
     <div class="kpi-grid" id="kpis"></div>
 
     <div class="main-grid">
       <div class="chart-card">
-        <div class="grafico" id="chart"><div class="loading"><div class="spinner"></div><span>Cargando las actividades…</span></div></div>
+        <div class="grafico" id="chart"><div class="loading"><div class="spinner"></div><span data-en="Loading activities…">Cargando las actividades…</span></div></div>
       </div>
       <div class="panel">
-        <div class="panel-hd"><span class="panel-hd-t">Lectura del indicador</span><span class="panel-hd-d" id="panel-fecha"></span></div>
+        <div class="panel-hd"><span class="panel-hd-t" data-en="Reading the indicator">Lectura del indicador</span><span class="panel-hd-d" id="panel-fecha"></span></div>
         <div class="panel-body" id="panel"></div>
       </div>
     </div>
@@ -51,21 +51,22 @@
 
   <script>
   (function () {
-    var C = PM.C, NB = ' ';
+    var C = PM.C, NB = ' ', T = PM.t;
     var MED = {
-      pct_ocupados: { nombre: '% del empleo', larga: 'participación en el empleo', color: C.turquesa, fmt: 'pct', desc: 'Porcentaje de los ocupados que trabaja en cada actividad' },
-      informalidad: { nombre: 'Informalidad', larga: 'ocupación informal', color: C.rojo, fmt: 'pct', desc: 'Porcentaje de los ocupados de cada actividad con empleo informal' },
-      ingreso_real_mediana: { nombre: 'Ingreso', larga: 'ingreso mediano', color: C.oro, fmt: 'bs', desc: 'Ingreso mensual mediano de la ocupación principal, en Bs del 1T-2026' },
-      mujeres_pct: { nombre: 'Mujeres', larga: 'participación de las mujeres', color: C.granate, fmt: 'pct', desc: 'Porcentaje de mujeres entre los ocupados de cada actividad' },
-      horas_media: { nombre: 'Horas', larga: 'horas semanales promedio', color: C.petroleo, fmt: 'h', desc: 'Horas trabajadas por semana en la ocupación principal (promedio)' }
+      pct_ocupados: { nombre: T('% del empleo', '% of employment'), larga: T('participación en el empleo', 'share of employment'), color: C.turquesa, fmt: 'pct', desc: T('Porcentaje de los ocupados que trabaja en cada actividad', 'Percent of the employed who work in each activity') },
+      informalidad: { nombre: T('Informalidad', 'Informality'), larga: T('ocupación informal', 'informal employment'), color: C.rojo, fmt: 'pct', desc: T('Porcentaje de los ocupados de cada actividad con empleo informal', 'Percent of the employed in each activity who are in informal employment') },
+      ingreso_real_mediana: { nombre: T('Ingreso', 'Income'), larga: T('ingreso mediano', 'median income'), color: C.oro, fmt: 'bs', desc: '' },   // desc: con la base de los datos, al cargar
+      mujeres_pct: { nombre: T('Mujeres', 'Women'), larga: T('participación de las mujeres', 'share of women'), color: C.granate, fmt: 'pct', desc: T('Porcentaje de mujeres entre los ocupados de cada actividad', 'Percent of women among the employed in each activity') },
+      horas_media: { nombre: T('Horas', 'Hours'), larga: T('horas semanales promedio', 'average weekly hours'), color: C.petroleo, fmt: 'h', desc: T('Horas trabajadas por semana en la ocupación principal (promedio)', 'Hours worked per week in the main job (average)') }
     };
-    var CORTO = { 'Servicios financieros, profesionales y TIC': 'Financieros, profesionales y TIC', 'Transporte y almacenamiento': 'Transporte', 'Electricidad, gas y agua': 'Electricidad, gas y agua', 'Salud y asistencia social': 'Salud' };
-    var DOMS = { 'Bolivia': [['Bolivia', 'Bolivia'], ['Urbano', 'Área urbana'], ['Rural', 'Área rural']],
-      'Departamento': ['Chuquisaca', 'La Paz', 'Cochabamba', 'Oruro', 'Potosí', 'Tarija', 'Santa Cruz', 'Beni', 'Pando'].map(function (d) { return [d, d]; }) };
+    // claves: los nombres de las ramas del JSON (castellano); se muestran con L.N o con su forma corta
+    var CORTO = { 'Servicios financieros, profesionales y TIC': T('Financieros, profesionales y TIC', 'Finance, professional and ICT'), 'Transporte y almacenamiento': T('Transporte', 'Transport'), 'Electricidad, gas y agua': T('Electricidad, gas y agua', 'Electricity, gas and water'), 'Salud y asistencia social': T('Salud', 'Health') };
+    var DOMS = { 'Bolivia': [['Bolivia', 'Bolivia'], ['Urbano', L.N('Área urbana')], ['Rural', L.N('Área rural')]] };
+    DOMS[T('Departamento', 'Department')] = ['Chuquisaca', 'La Paz', 'Cochabamba', 'Oruro', 'Potosí', 'Tarija', 'Santa Cruz', 'Beni', 'Pando'].map(function (d) { return [d, d]; });
     var estado = { medida: 'pct_ocupados', dominio: 'Santa Cruz', per: null, k: null };
     var D, P, RAMAS, ITEMS = [], grafico;
     var med = function () { return MED[estado.medida]; };
-    var corto = function (r) { return (PM.pequeno() && CORTO[r]) || r; };
+    var corto = function (r) { return (PM.pequeno() && CORTO[r]) || L.N(r); };
     var fmt = function (v, m) { m = m || med(); if (v == null) return '—'; return m.fmt === 'bs' ? L.bs(v) : m.fmt === 'h' ? PM.num(v, 1) + NB + 'h' : PM.pct(v, 1); };
     // 2020 de Bolivia: sin encuesta rural de abril a diciembre. Para el % y los ocupados de cada actividad va la ESTIMACIÓN
     // POPULI (1T observado + 2T-4T estimados), aparte de la serie oficial y marcada (metodologia.html#hueco-2020)
@@ -79,13 +80,14 @@
     // las medianas no llevan CV: se ocultan con pocos casos sólo por la regla de 30 casos del catálogo (calidad 2)
     var publicable = function (r, k, j) { return val(r, k, j) != null && cal(r, k, j) !== 2; };
     var txt = function (r, k, j) { return publicable(r, k, j) ? L.conCalidad(fmt(val(r, k, j), MED[k || estado.medida]), cal(r, k, j)) : '—'; };
-    var etqPer = function (j) { return P[j] === 'AM' ? PM.fecha(D.ventana_am[0]) + '–' + PM.fecha(D.ventana_am[1]) : P[j] + (esEst(j) ? ' (estimado)' : ''); };
+    var etqPer = function (j) { return P[j] === 'AM' ? PM.fecha(D.ventana_am[0]) + '–' + PM.fecha(D.ventana_am[1]) : P[j] + (esEst(j) ? T(' (estimado)', ' (estimated)') : ''); };
 
     PM.cargar(['sectores.json']).then(function (r) {
       D = r[0]; P = D.periodos; RAMAS = D.ramas; estado.per = P.length - 1;
+      MED.ingreso_real_mediana.desc = T('Ingreso mensual mediano de la ocupación principal, en ', 'Median monthly income from the main job, in ') + L.base(D.metadata).corto;
       (PM.pequeno() ? L.selector : PM.botonera)(document.getElementById('b-medida'), Object.keys(MED).map(function (k) { return [k, MED[k].nombre]; }), estado.medida,
-        function (v) { estado.medida = v; todo(); }, 'Indicador');
-      L.selector(document.getElementById('b-dominio'), DOMS, estado.dominio, function (v) { estado.dominio = v; periodos(); todo(); }, 'Dónde');
+        function (v) { estado.medida = v; todo(); }, T('Indicador', 'Indicator'));
+      L.selector(document.getElementById('b-dominio'), DOMS, estado.dominio, function (v) { estado.dominio = v; periodos(); todo(); }, T('Dónde', 'Area'));
       periodos(); cifras(); textos();
       var el = document.getElementById('chart'); el.innerHTML = '';
       grafico = PM.montar(el, opciones);
@@ -93,21 +95,22 @@
       PM.alCambiarTema(function () { cifras(); panel(estado.k); });
       PM.preguntas(document.getElementById('preguntas'), PREGUNTAS);
       document.getElementById('fuente').innerHTML = L.fuente({}, PM.fecha(D.ventana_am[1])) +
-        (D.estimados ? ' · <strong>2020</strong> en Bolivia: estimación POPULI del empleo de cada actividad (el INE no levantó el área rural de abril a diciembre), <a href="' + D.estimados.metodologia + '" target="_blank" rel="noopener">ver metodología</a>' : '');
+        (D.estimados ? T(' · <strong>2020</strong> en Bolivia: estimación POPULI del empleo de cada actividad (el INE no levantó el área rural de abril a diciembre), <a href="' + D.estimados.metodologia + '" target="_blank" rel="noopener">ver metodología</a>',
+          ' · <strong>2020</strong> for Bolivia: POPULI estimate of employment in each activity (INE did not survey rural areas from April to December), <a href="' + L.metodologia(D.estimados.metodologia) + '" target="_blank" rel="noopener">see methodology</a>') : '');
     }).catch(function (e) { console.error(e); PM.error(document.getElementById('chart')); });
 
     function periodos() {
       var ops = [];
-      for (var j = P.length - 1; j >= 0; j--) if (RAMAS.some(function (r) { return val(r, 'pct_ocupados', j) != null; })) ops.push([String(j), P[j] === 'AM' ? 'Últimos 4 trim.' : P[j] + (esEst(j) ? ' (estimado)' : '')]);
+      for (var j = P.length - 1; j >= 0; j--) if (RAMAS.some(function (r) { return val(r, 'pct_ocupados', j) != null; })) ops.push([String(j), P[j] === 'AM' ? T('Últimos 4 trim.', 'Last 4 quarters') : P[j] + (esEst(j) ? T(' (estimado)', ' (estimated)') : '')]);
       if (!ops.some(function (o) { return +o[0] === estado.per; })) estado.per = +ops[0][0];
-      L.selector(document.getElementById('b-periodo'), ops, String(estado.per), function (v) { estado.per = +v; todo(); }, 'Periodo');
+      L.selector(document.getElementById('b-periodo'), ops, String(estado.per), function (v) { estado.per = +v; todo(); }, T('Periodo', 'Period'));
     }
     function todo() { textos(); cifras(); var o = opciones(); o.animation = true; grafico.chart.setOption(o); PM.programarAlto(); panel(estado.k); }
     function ordenadas() {
       return RAMAS.map(function (r) { return { r: r, v: publicable(r) ? val(r) : null }; })
         .sort(function (a, b) { return a.v == null ? 1 : b.v == null ? -1 : b.v - a.v; });
     }
-    function textos() { document.getElementById('sub').textContent = med().desc + ' · ' + estado.dominio + ', ' + (P[estado.per] === 'AM' ? 'últimos 4 trimestres (' + etqPer(estado.per) + ')' : 'año ' + P[estado.per] + (esEst() ? ' (estimación POPULI del empleo)' : '')) + '.'; }
+    function textos() { document.getElementById('sub').textContent = med().desc + ' · ' + L.N(estado.dominio) + ', ' + (P[estado.per] === 'AM' ? T('últimos 4 trimestres (', 'last four quarters (') + etqPer(estado.per) + ')' : T('año ', 'year ') + P[estado.per] + (esEst() ? T(' (estimación POPULI del empleo)', ' (POPULI estimate of employment)') : '')) + '.'; }
 
     function cifras() {
       var maxi = function (k, menor) {
@@ -116,9 +119,9 @@
         return xs[0];
       };
       var a = maxi('pct_ocupados'), b = maxi('informalidad'), c = maxi('informalidad', true), d = maxi('ingreso_real_mediana');
-      var t = function (x, k, col, rot, tono) { return x ? PM.kpi({ color: col, rotulo: rot, valor: fmt(x.v, MED[k]), delta: x.r, tono: tono || 'neutro' }) : ''; };
-      document.getElementById('kpis').innerHTML = t(a, 'pct_ocupados', C.turquesa, 'Más empleo') + t(b, 'informalidad', C.rojo, 'Más informal', 'malo') +
-        t(c, 'informalidad', { claro: C.petroleo, oscuro: C.menta }, 'Menos informal', 'bueno') + t(d, 'ingreso_real_mediana', C.oro, 'Mejor ingreso');
+      var t = function (x, k, col, rot, tono) { return x ? PM.kpi({ color: col, rotulo: rot, valor: fmt(x.v, MED[k]), delta: L.N(x.r), tono: tono || 'neutro' }) : ''; };
+      document.getElementById('kpis').innerHTML = t(a, 'pct_ocupados', C.turquesa, T('Más empleo', 'Most employment')) + t(b, 'informalidad', C.rojo, T('Más informal', 'Most informal'), 'malo') +
+        t(c, 'informalidad', { claro: C.petroleo, oscuro: C.menta }, T('Menos informal', 'Least informal'), 'bueno') + t(d, 'ingreso_real_mediana', C.oro, T('Mejor ingreso', 'Highest income'));
     }
 
     var medidor;
@@ -148,7 +151,7 @@
             { type: 'text', z2: 5, x: cs.x, y: 0, style: { text: String(params.dataIndex + 1), fontFamily: mono, fontSize: fRk, fontWeight: 500, fill: pz, align: 'left', verticalAlign: 'middle' } },
             { type: 'text', z2: 5, x: plotL - 10, y: 0, style: { text: corto(r), fontFamily: inter, fontSize: fNom, fontWeight: 500, fill: tinta, align: 'right', verticalAlign: 'middle' }, emphasis: { style: { fontWeight: 700 } } }
           ];
-          if (v == null) hijos.push({ type: 'text', z2: 5, x: plotL + GAP, y: 0, style: { text: 'pocos casos', fontFamily: inter, fontSize: fCif - 1, fill: pz, align: 'left', verticalAlign: 'middle' } });
+          if (v == null) hijos.push({ type: 'text', z2: 5, x: plotL + GAP, y: 0, style: { text: T('pocos casos', 'too few cases'), fontFamily: inter, fontSize: fCif - 1, fill: pz, align: 'left', verticalAlign: 'middle' } });
           else {
             hijos.push({ type: 'rect', z2: 2, shape: { x: plotL, y: -bh / 2, width: Math.max(1, X(v) - plotL), height: bh }, style: { fill: color, opacity: cal(r) === 1 || esEst() ? 0.5 : 0.92 } });   // referencial o estimado: más clara
             hijos.push({ type: 'text', z2: 5, x: X(v) + GAP, y: 0, transition: ['x'], style: { text: txt(r), fontFamily: mono, fontSize: fCif, fontWeight: 600, fill: PM.tx(med().color), align: 'left', verticalAlign: 'middle' } });
@@ -165,9 +168,9 @@
         tooltip: PM.tooltip(function (p) {
           var r = ITEMS[p.dataIndex]; if (!r) return '';
           panel(r);
-          var h = PM.ttTitulo(r, estado.dominio + ' · ' + etqPer(estado.per));
+          var h = PM.ttTitulo(L.N(r), L.N(estado.dominio) + ' · ' + etqPer(estado.per));
           Object.keys(MED).forEach(function (k) { h += PM.ttFila(MED[k].color, MED[k].nombre, txt(r, k), 'area'); });
-          if (esEst()) h += PM.ttPie('2020: estimación POPULI del empleo; el resto no se estima');
+          if (esEst()) h += PM.ttPie(T('2020: estimación POPULI del empleo; el resto no se estima', '2020: POPULI estimate of employment; the rest is not estimated'));
           return h;
         }, { trigger: 'item' }),
         series: [serie]
@@ -177,36 +180,44 @@
     function panel(r) {
       if (!D || !r) return;
       estado.k = r;
-      document.getElementById('panel-fecha').textContent = estado.dominio + ' · ' + etqPer(estado.per);
+      document.getElementById('panel-fecha').textContent = L.N(estado.dominio) + ' · ' + etqPer(estado.per);
       var j19 = P.indexOf('2019'), v = val(r), v19 = j19 >= 0 ? val(r, null, j19) : null;
-      var desc = MED[estado.medida].desc + '.' + (v != null && v19 != null && j19 !== estado.per ? ' En 2019: ' + fmt(v19) + '.' : '');
+      var desc = MED[estado.medida].desc + '.' + (v != null && v19 != null && j19 !== estado.per ? T(' En 2019: ', ' In 2019: ') + fmt(v19) + '.' : '');
       var tabla = '<div class="ind">' + Object.keys(MED).map(function (k) { return '<span class="ind-n">' + MED[k].nombre + '</span><span class="ind-v">' + txt(r, k) + '</span>'; }).join('') + '</div>';
-      var html = PM.pb(med().color, r, txt(r), desc).replace(/<\/div>$/, tabla + '</div>');
-      document.getElementById('panel').innerHTML = html + PM.ctx((esEst() ? 'Entre abril y diciembre de 2020 el INE no levantó la encuesta en el área rural: el empleo de cada actividad en 2020 es una <strong>estimación POPULI</strong> (primer trimestre observado; los otros tres, con la parte rural estimada con ' + L.METODO + '). La informalidad, el ingreso, las horas y el resto no se estiman. <a href="' + D.estimados.metodologia + '" target="_blank" rel="noopener">Ver metodología</a>. ' : '') + lectura(r));
+      var html = PM.pb(med().color, L.N(r), txt(r), desc).replace(/<\/div>$/, tabla + '</div>');
+      document.getElementById('panel').innerHTML = html + PM.ctx((esEst() ? T('Entre abril y diciembre de 2020 el INE no levantó la encuesta en el área rural: el empleo de cada actividad en 2020 es una <strong>estimación POPULI</strong> (primer trimestre observado; los otros tres, con la parte rural estimada con ' + L.METODO + '). La informalidad, el ingreso, las horas y el resto no se estiman. <a href="' + D.estimados.metodologia + '" target="_blank" rel="noopener">Ver metodología</a>. ',
+        'Between April and December 2020 INE did not run the survey in rural areas: employment in each activity in 2020 is a <strong>POPULI estimate</strong> (first quarter observed; the other three with the rural part estimated using ' + L.METODO + '). Informality, income, hours and the rest are not estimated. <a href="' + L.metodologia(D.estimados.metodologia) + '" target="_blank" rel="noopener">See methodology</a>. ') : '') + lectura(r));
     }
     function lectura(r) {
       var pe = val(r, 'pct_ocupados'), inf = val(r, 'informalidad'), ing = val(r, 'ingreso_real_mediana'), muj = val(r, 'mujeres_pct');
-      if (pe == null) return 'Sin dato suficiente para ' + r + ' en ' + estado.dominio + '.';
-      var t = '<strong>' + r + '</strong> ocupa a <strong>' + PM.pct(pe, 1) + '</strong> de los trabajadores de ' + estado.dominio + '.';
-      if (inf != null && publicable(r, 'informalidad')) t += ' ' + PM.num(inf / 10, 1) + ' de cada 10 tienen un empleo informal';
-      if (ing != null && publicable(r, 'ingreso_real_mediana')) t += ' y la mitad gana menos de ' + L.bs(ing) + ' al mes';
-      t += '.';
-      if (muj != null) t += ' ' + (muj >= 50 ? 'Es una actividad mayoritariamente femenina (' + PM.pct(muj, 0) + ' mujeres).' : 'Las mujeres son ' + PM.pct(muj, 0) + ' de sus ocupados.');
+      if (pe == null) return T('Sin dato suficiente para ' + r + ' en ' + L.lugar(estado.dominio) + '.', 'Not enough data for ' + L.N(r) + ' in ' + L.lugar(estado.dominio) + '.');
+      var t = T('<strong>' + r + '</strong> ocupa a <strong>' + PM.pct(pe, 1) + '</strong> de los trabajadores ' + L.de(estado.dominio) + '.',
+        '<strong>' + L.N(r) + '</strong> ' + (/s$/.test(L.N(r)) ? 'employ' : 'employs') + ' <strong>' + PM.pct(pe, 1) + '</strong> of workers in ' + L.lugar(estado.dominio) + '.');
+      var conInf = inf != null && publicable(r, 'informalidad'), conIng = ing != null && publicable(r, 'ingreso_real_mediana');
+      if (conInf) t += ' ' + PM.num(inf / 10, 1) + T(' de cada 10 tienen un empleo informal', ' in 10 are in informal employment');
+      if (conIng) t += conInf ? T(' y la mitad gana menos de ' + L.bs(ing) + ' al mes', ' and half earn less than ' + L.bs(ing) + ' a month')
+        : T(' La mitad gana menos de ' + L.bs(ing) + ' al mes', ' Half earn less than ' + L.bs(ing) + ' a month');
+      if (conInf || conIng) t += '.';
+      if (muj != null) t += ' ' + (muj >= 50 ? T('Es una actividad mayoritariamente femenina (' + PM.pct(muj, 0) + ' mujeres).', 'It is a mostly female activity (' + PM.pct(muj, 0) + ' women).') : T('Las mujeres son ' + PM.pct(muj, 0) + ' de sus ocupados.', 'Women make up ' + PM.pct(muj, 0) + ' of those employed in it.'));
       return t;
     }
 
     PM.leyendaImagen = function () { return []; };
     PM.tablaDatos = function () {
       var ks = Object.keys(MED);
-      return { cols: ['Actividad', 'Dónde', 'Periodo'].concat(ks.map(function (k) { return MED[k].nombre + (MED[k].fmt === 'bs' ? ' (Bs del 1T-2026)' : MED[k].fmt === 'h' ? ' (horas)' : ' (%)'); })),
-        filas: RAMAS.map(function (r) { return [r, estado.dominio, etqPer(estado.per)].concat(ks.map(function (k) { return publicable(r, k) ? val(r, k) : null; })); }) };
+      return { cols: [T('Actividad', 'Activity'), T('Dónde', 'Area'), T('Periodo', 'Period')].concat(ks.map(function (k) { return MED[k].nombre + (MED[k].fmt === 'bs' ? ' (' + L.base(D.metadata).corto + ')' : MED[k].fmt === 'h' ? T(' (horas)', ' (hours)') : ' (%)'); })),
+        filas: RAMAS.map(function (r) { return [L.N(r), L.N(estado.dominio), etqPer(estado.per)].concat(ks.map(function (k) { return publicable(r, k) ? val(r, k) : null; })); }) };
     };
 
     var PREGUNTAS = [
-      ['¿Qué ramas son?', 'Las 21 secciones de la Clasificación de Actividades Económicas de Bolivia (CAEB) que el INE asigna a la ocupación principal, agrupadas en 14: información y comunicaciones, finanzas, inmobiliarias, servicios profesionales y administrativos van juntos; también electricidad, gas y agua; y artes, otros servicios y organismos extraterritoriales.'],
-      ['¿Por qué el agro es tan informal y gana tan poco?', 'La mayor parte del empleo agropecuario es de productores por cuenta propia y familiares sin remuneración en unidades campesinas, sin registro ni contabilidad: por definición, informales. Su ingreso monetario es bajo porque parte de lo que producen se consume en el hogar y no se registra como ingreso laboral.'],
-      ['¿Qué tan precisas son las cifras?', 'Se juntan cuatro trimestres (año completo o año móvil). Entre paréntesis y con barra más clara, las cifras referenciales (error de muestreo de 15 a 25 %); «pocos casos» cuando no hay suficientes encuestados. Las tarjetas de arriba comparan sólo las ramas con 5 % o más del empleo (así no gana una rama diminuta o una que es informal por definición, como el trabajo en hogares). En los departamentos chicos, las ramas pequeñas (minería en Pando, electricidad en el Beni) suelen quedar así.'],
-      ['¿Ocupados o empleos?', 'Se cuenta a cada persona una vez, por su ocupación principal (la que le da más ingresos o horas). Quien tiene un segundo trabajo no aparece en la rama de ese segundo trabajo.']
+      [T('¿Qué ramas son?', 'Which activities are these?'), T('Las 21 secciones de la Clasificación de Actividades Económicas de Bolivia (CAEB) que el INE asigna a la ocupación principal, agrupadas en 14: información y comunicaciones, finanzas, inmobiliarias, servicios profesionales y administrativos van juntos; también electricidad, gas y agua; y artes, otros servicios y organismos extraterritoriales.',
+        'The 21 sections of the Bolivian Classification of Economic Activities (CAEB) that INE assigns to the main job, grouped into 14: information and communications, finance, real estate, and professional and administrative services go together; so do electricity, gas and water; and arts, other services and extraterritorial organizations.')],
+      [T('¿Por qué el agro es tan informal y gana tan poco?', 'Why is agriculture so informal and so poorly paid?'), T('La mayor parte del empleo agropecuario es de productores por cuenta propia y familiares sin remuneración en unidades campesinas, sin registro ni contabilidad: por definición, informales. Su ingreso monetario es bajo porque parte de lo que producen se consume en el hogar y no se registra como ingreso laboral.',
+        'Most agricultural employment is made up of own-account producers and unpaid family workers on peasant farms, with no registration or bookkeeping: by definition, informal. Their cash income is low because part of what they produce is consumed in the household and is not recorded as labor income.')],
+      [T('¿Qué tan precisas son las cifras?', 'How precise are the figures?'), T('Se juntan cuatro trimestres (año completo o año móvil). Entre paréntesis y con barra más clara, las cifras referenciales (error de muestreo de 15 a 25 %); «pocos casos» cuando no hay suficientes encuestados. Las tarjetas de arriba comparan sólo las ramas con 5 % o más del empleo (así no gana una rama diminuta o una que es informal por definición, como el trabajo en hogares). En los departamentos chicos, las ramas pequeñas (minería en Pando, electricidad en el Beni) suelen quedar así.',
+        'Four quarters are pooled (calendar year or rolling year). Indicative figures (sampling error of 15% to 25%) appear in parentheses with a lighter bar; “too few cases” appears when there are not enough respondents. The cards at the top compare only activities with 5% or more of employment (so that a tiny activity, or one that is informal by definition such as households as employers, does not come out on top). In the small departments, the small activities (mining in Pando, electricity in Beni) often end up this way.')],
+      [T('¿Ocupados o empleos?', 'Workers or jobs?'), T('Se cuenta a cada persona una vez, por su ocupación principal (la que le da más ingresos o horas). Quien tiene un segundo trabajo no aparece en la rama de ese segundo trabajo.',
+        'Each person is counted once, by their main job (the one that provides the most income or hours). Someone with a second job does not appear in the activity of that second job.')]
     ];
   })();
   </script>
