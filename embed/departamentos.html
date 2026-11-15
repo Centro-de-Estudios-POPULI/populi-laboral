@@ -76,8 +76,11 @@
     var med = function () { return MED[estado.medida]; };
     var fmt = function (v, m) { if (v == null) return '—'; return (m || med()).fmt === 'bs' ? L.bs(v) : PM.pct(v, 1); };
     var dif = function (d, m) { return (m || med()).fmt === 'bs' ? (d >= 0 ? '+' : '−') + 'Bs' + NB + PM.num(Math.abs(d), 0) : PM.pp(d, 1); };
-    var etqPer = function (j) { var p = P[j]; return p === 'AM' ? 'últimos 4 trimestres (' + PM.fecha(D.ventana_am[0]) + ' a ' + PM.fecha(D.ventana_am[1]) + ')' : 'año ' + p; };
-    var etqCorta = function (j) { var p = P[j]; return p === 'AM' ? PM.fecha(D.ventana_am[0]) + '–' + PM.fecha(D.ventana_am[1]) : p; };
+    var etqPer = function (j) { var p = P[j]; return p === 'AM' ? 'últimos 4 trimestres (' + PM.fecha(D.ventana_am[0]) + ' a ' + PM.fecha(D.ventana_am[1]) + ')' : 'año ' + p + (esEst(j) ? ' (estimación POPULI)' : ''); };
+    var etqCorta = function (j) { var p = P[j]; return p === 'AM' ? PM.fecha(D.ventana_am[0]) + '–' + PM.fecha(D.ventana_am[1]) : p + (esEst(j) ? ' · estimado' : ''); };
+    // 2020 del total: sin encuesta rural de abril a diciembre. Va la ESTIMACIÓN POPULI (1T observado + 2T-4T estimados),
+    // aparte de la serie oficial y marcada en cada cifra (metodologia.html#hueco-2020)
+    var esEst = function (j) { j = j == null ? estado.per : j; return estado.ambito === 'total' && !!D.estimados && P[j] === D.estimados.periodo; };
 
     PM.cargar(['departamentos.json', 'bolivia.geojson']).then(function (r) {
       D = r[0]; P = D.periodos; estado.per = P.length - 1;
@@ -99,13 +102,14 @@
       panel('Santa Cruz');
       PM.alCambiarTema(function () { cifras(); panel(estado.k); });
       PM.preguntas(document.getElementById('preguntas'), PREGUNTAS);
-      document.getElementById('fuente').innerHTML = L.fuente({}, PM.fecha(D.ventana_am[1])) + ' · Mapa: límites departamentales';
+      document.getElementById('fuente').innerHTML = L.fuente({}, PM.fecha(D.ventana_am[1])) + ' · Mapa: límites departamentales' +
+        (D.estimados ? ' · <strong>2020</strong>: estimación POPULI (el INE no levantó el área rural de abril a diciembre), <a href="' + D.estimados.metodologia + '" target="_blank" rel="noopener">ver metodología</a>' : '');
     }).catch(function (e) { console.error(e); PM.error(document.getElementById('chart')); });
 
     // los años con dato en el ámbito elegido (2020 no tiene total: sin encuesta rural de abril a diciembre)
     function periodos() {
       var ops = [];
-      for (var j = P.length - 1; j >= 0; j--) if (val(NAC, j) != null) ops.push([String(j), P[j] === 'AM' ? 'Últimos 4 trim.' : P[j]]);
+      for (var j = P.length - 1; j >= 0; j--) if (val(NAC, j) != null) ops.push([String(j), P[j] === 'AM' ? 'Últimos 4 trim.' : P[j] + (esEst(j) ? ' (estimado)' : '')]);
       if (val(NAC, estado.per) == null) estado.per = +ops[0][0];
       L.selector(document.getElementById('b-periodo'), ops, String(estado.per), function (v) { estado.per = +v; todo(); }, 'Periodo');
     }
@@ -119,7 +123,9 @@
     function val(c, j, k) {
       k = k || estado.medida;
       if (c !== NAC && (NO_COMP[k] || []).indexOf(c) >= 0) return null;
-      var s = D.datos[estado.ambito][c]; return s && s[k] ? s[k][j == null ? estado.per : j] : null;
+      var s = D.datos[estado.ambito][c], v = s && s[k] ? s[k][j == null ? estado.per : j] : null;
+      if (v == null && esEst(j)) { var e = D.estimados.total[c] && D.estimados.total[c][k]; v = e ? e[0] : null; }
+      return v;
     }
     function cal(c, j, k) { var s = D.calidad[estado.ambito][c]; return s && s[k || estado.medida] ? s[k || estado.medida][j == null ? estado.per : j] : null; }
     function ordenadas() {
@@ -296,7 +302,7 @@
             hijos.push({ type: 'text', z2: 5, x: cero + GAP, y: 0, style: { text: 'no comparable', fontFamily: inter, fontSize: fCif - 1, fontWeight: 500, fill: pz, align: 'left', verticalAlign: 'middle' } });
           } else {
             var x1 = X(v), neg = v < 0;
-            hijos.push({ type: 'rect', z2: 2, shape: { x: Math.min(cero, x1), y: -bh / 2, width: Math.max(1, Math.abs(x1 - cero)), height: bh }, style: { fill: colB(c), opacity: cal(c) === 1 ? 0.55 : 1 } });
+            hijos.push({ type: 'rect', z2: 2, shape: { x: Math.min(cero, x1), y: -bh / 2, width: Math.max(1, Math.abs(x1 - cero)), height: bh }, style: { fill: colB(c), opacity: cal(c) === 1 || esEst() ? 0.55 : 1 } });   // referencial o estimado: más clara
             hijos.push({ type: 'text', z2: 5, x: neg ? x1 - GAP : x1 + GAP, y: 0, transition: ['x'],
               style: { text: cifraTxt(c), fontFamily: mono, fontSize: fCif, fontWeight: 600, fill: colT(c), align: neg ? 'right' : 'left', verticalAlign: 'middle', backgroundColor: card, padding: [1, PAD] },
               emphasis: { style: { backgroundColor: sombra } } });
@@ -385,6 +391,7 @@
       if (v == null) return h + PM.ttFila(null, 'No comparable', '—');
       h += PM.ttFila(colorDe(c, paso()), c, cifraTxt(c), 'area') + PM.ttFila(C.tinta, 'Bolivia', fmt(nac), 'area') + PM.ttTotal('Diferencia', dif(v - nac));
       if (cal(c) === 1) h += PM.ttPie('Entre paréntesis: dato referencial (error de muestreo del 15 al 25 %)');
+      if (esEst()) h += PM.ttPie('2020: estimación POPULI (sin encuesta rural de abril a diciembre)');
       return h;
     }
 
@@ -406,7 +413,7 @@
         }).join('') + '</div>';
         html += PM.pb(v == null ? C.gris : peor(v, nac) ? C.rojo : C.turquesa, c, v == null ? '—' : cifraTxt(c), desc).replace(/<\/div>$/, tabla + '</div>');
       }
-      document.getElementById('panel').innerHTML = html + PM.ctx(lectura());
+      document.getElementById('panel').innerHTML = html + PM.ctx((esEst() ? 'Entre abril y diciembre de 2020 el INE no levantó la encuesta en el área rural: las cifras de 2020 son una <strong>estimación POPULI</strong> (el primer trimestre observado y los otros tres estimados con ' + L.METODO + '). <a href="' + D.estimados.metodologia + '" target="_blank" rel="noopener">Ver metodología</a>. ' : '') + lectura());
     }
     function lectura() {
       var nac = val(NAC), fil = ordenadas(), n = fil.length; if (!n) return '';
@@ -422,7 +429,7 @@
     PM.leyendaImagen = function () { return []; };
     PM.tablaDatos = function () {
       var ks = Object.keys(MED);
-      var fila = function (c) { return [c, etqCorta(estado.per), estado.ambito].concat(ks.map(function (k) { return val(c, null, k); })); };
+      var fila = function (c) { return [c, etqCorta(estado.per) + (esEst() ? ' (estimación POPULI)' : ''), estado.ambito].concat(ks.map(function (k) { return val(c, null, k); })); };
       return { cols: ['Departamento', 'Periodo', 'Ámbito'].concat(ks.map(function (k) { return MED[k].nombre + (MED[k].fmt === 'bs' ? ' (Bs del 1T-2026)' : ' (%)'); })),
         filas: [fila(NAC)].concat(DEPS.map(fila)) };
     };
@@ -432,7 +439,7 @@
       ['¿Cómo se lee el mapa?', 'El color es la <strong>diferencia con Bolivia</strong>: rojizo, peor que el país; turquesa, mejor; arena, parecido. Para la desocupación, la informalidad y quienes ganan menos que el mínimo, «peor» es más alto; para el ingreso, el seguro de salud y la participación, «peor» es más bajo. El ranking ordena las mismas cifras de mayor a menor, con Bolivia arriba y su raya punteada detrás de las barras.'],
       ['¿Qué quieren decir los paréntesis?', 'Una cifra entre paréntesis (y su barra más clara) es <strong>referencial</strong>: su error de muestreo está entre 15 y 25 % del valor. Sirve para ordenar, no para afirmar diferencias chicas. Las cifras con un error mayor no se muestran. Los ingresos son medianas: no llevan esa marca.'],
       ['¿Por qué el Beni no tiene subutilización?', 'Desde el tercer trimestre de 2021, en el Beni casi nadie de los que trabajan menos de 40 horas declara querer trabajar más (0-3 %, frente a 10-40 % en el resto del país). Es un efecto de cómo se levanta la encuesta, no un dato del mercado laboral: su subocupación y su subutilización amplia no son comparables.'],
-      ['¿Y 2020?', 'Entre abril y diciembre de 2020 la encuesta no se levantó en el área rural. Por eso 2020 sólo está disponible en el ámbito urbano.']
+      ['¿Y 2020?', 'Entre abril y diciembre de 2020 la encuesta no se levantó en el área rural. En el ámbito urbano, 2020 es dato del INE. En el total, 2020 es una <strong>estimación POPULI</strong>: el primer trimestre observado y los otros tres armados con el área urbana observada más la parte rural de cada departamento estimada con un promedio de modelos de series de tiempo (y ajustada para que los nueve sumen el área rural del país). El seguro de salud no se estima: la pregunta no se hizo en la pandemia. <a href="../metodologia.html#hueco-2020" target="_blank" rel="noopener">Metodología</a>.']
     ];
   })();
   </script>

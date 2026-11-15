@@ -67,12 +67,19 @@
     var med = function () { return MED[estado.medida]; };
     var corto = function (r) { return (PM.pequeno() && CORTO[r]) || r; };
     var fmt = function (v, m) { m = m || med(); if (v == null) return '—'; return m.fmt === 'bs' ? L.bs(v) : m.fmt === 'h' ? PM.num(v, 1) + NB + 'h' : PM.pct(v, 1); };
-    var val = function (r, k, j, d) { var x = D.datos[d || estado.dominio][k || estado.medida]; x = x && x[j == null ? estado.per : j]; return x ? x[RAMAS.indexOf(r)] : null; };
+    // 2020 de Bolivia: sin encuesta rural de abril a diciembre. Para el % y los ocupados de cada actividad va la ESTIMACIÓN
+    // POPULI (1T observado + 2T-4T estimados), aparte de la serie oficial y marcada (metodologia.html#hueco-2020)
+    var esEst = function (j, d) { j = j == null ? estado.per : j; var e = D.estimados; return !!e && P[j] === e.periodo && !!e[d || estado.dominio]; };
+    var val = function (r, k, j, d) {
+      var x = D.datos[d || estado.dominio][k || estado.medida]; x = x && x[j == null ? estado.per : j]; var v = x ? x[RAMAS.indexOf(r)] : null;
+      if (v == null && esEst(j, d)) { var e = D.estimados[d || estado.dominio][k || estado.medida]; v = e ? e.v[RAMAS.indexOf(r)] : null; }
+      return v;
+    };
     var cal = function (r, k, j) { var x = D.calidad[estado.dominio][k || estado.medida]; x = x && x[j == null ? estado.per : j]; return x ? x[RAMAS.indexOf(r)] : null; };
     // las medianas no llevan CV: se ocultan con pocos casos sólo por la regla de 30 casos del catálogo (calidad 2)
     var publicable = function (r, k, j) { return val(r, k, j) != null && cal(r, k, j) !== 2; };
     var txt = function (r, k, j) { return publicable(r, k, j) ? L.conCalidad(fmt(val(r, k, j), MED[k || estado.medida]), cal(r, k, j)) : '—'; };
-    var etqPer = function (j) { return P[j] === 'AM' ? PM.fecha(D.ventana_am[0]) + '–' + PM.fecha(D.ventana_am[1]) : P[j]; };
+    var etqPer = function (j) { return P[j] === 'AM' ? PM.fecha(D.ventana_am[0]) + '–' + PM.fecha(D.ventana_am[1]) : P[j] + (esEst(j) ? ' (estimado)' : ''); };
 
     PM.cargar(['sectores.json']).then(function (r) {
       D = r[0]; P = D.periodos; RAMAS = D.ramas; estado.per = P.length - 1;
@@ -85,12 +92,13 @@
       panel(ordenadas()[0].r);
       PM.alCambiarTema(function () { cifras(); panel(estado.k); });
       PM.preguntas(document.getElementById('preguntas'), PREGUNTAS);
-      document.getElementById('fuente').innerHTML = L.fuente({}, PM.fecha(D.ventana_am[1]));
+      document.getElementById('fuente').innerHTML = L.fuente({}, PM.fecha(D.ventana_am[1])) +
+        (D.estimados ? ' · <strong>2020</strong> en Bolivia: estimación POPULI del empleo de cada actividad (el INE no levantó el área rural de abril a diciembre), <a href="' + D.estimados.metodologia + '" target="_blank" rel="noopener">ver metodología</a>' : '');
     }).catch(function (e) { console.error(e); PM.error(document.getElementById('chart')); });
 
     function periodos() {
       var ops = [];
-      for (var j = P.length - 1; j >= 0; j--) if (RAMAS.some(function (r) { return val(r, 'pct_ocupados', j) != null; })) ops.push([String(j), P[j] === 'AM' ? 'Últimos 4 trim.' : P[j]]);
+      for (var j = P.length - 1; j >= 0; j--) if (RAMAS.some(function (r) { return val(r, 'pct_ocupados', j) != null; })) ops.push([String(j), P[j] === 'AM' ? 'Últimos 4 trim.' : P[j] + (esEst(j) ? ' (estimado)' : '')]);
       if (!ops.some(function (o) { return +o[0] === estado.per; })) estado.per = +ops[0][0];
       L.selector(document.getElementById('b-periodo'), ops, String(estado.per), function (v) { estado.per = +v; todo(); }, 'Periodo');
     }
@@ -99,7 +107,7 @@
       return RAMAS.map(function (r) { return { r: r, v: publicable(r) ? val(r) : null }; })
         .sort(function (a, b) { return a.v == null ? 1 : b.v == null ? -1 : b.v - a.v; });
     }
-    function textos() { document.getElementById('sub').textContent = med().desc + ' · ' + estado.dominio + ', ' + (P[estado.per] === 'AM' ? 'últimos 4 trimestres (' + etqPer(estado.per) + ')' : 'año ' + P[estado.per]) + '.'; }
+    function textos() { document.getElementById('sub').textContent = med().desc + ' · ' + estado.dominio + ', ' + (P[estado.per] === 'AM' ? 'últimos 4 trimestres (' + etqPer(estado.per) + ')' : 'año ' + P[estado.per] + (esEst() ? ' (estimación POPULI del empleo)' : '')) + '.'; }
 
     function cifras() {
       var maxi = function (k, menor) {
@@ -142,7 +150,7 @@
           ];
           if (v == null) hijos.push({ type: 'text', z2: 5, x: plotL + GAP, y: 0, style: { text: 'pocos casos', fontFamily: inter, fontSize: fCif - 1, fill: pz, align: 'left', verticalAlign: 'middle' } });
           else {
-            hijos.push({ type: 'rect', z2: 2, shape: { x: plotL, y: -bh / 2, width: Math.max(1, X(v) - plotL), height: bh }, style: { fill: color, opacity: cal(r) === 1 ? 0.5 : 0.92 } });
+            hijos.push({ type: 'rect', z2: 2, shape: { x: plotL, y: -bh / 2, width: Math.max(1, X(v) - plotL), height: bh }, style: { fill: color, opacity: cal(r) === 1 || esEst() ? 0.5 : 0.92 } });   // referencial o estimado: más clara
             hijos.push({ type: 'text', z2: 5, x: X(v) + GAP, y: 0, transition: ['x'], style: { text: txt(r), fontFamily: mono, fontSize: fCif, fontWeight: 600, fill: PM.tx(med().color), align: 'left', verticalAlign: 'middle' } });
           }
           if (params.dataIndex === 0) hijos.push({ type: 'line', z2: 1, silent: true, shape: { x1: plotL, y1: -rh / 2 + 2, x2: plotL, y2: cs.y + cs.height - cy - 2 }, style: { stroke: filete, lineWidth: 1 } });
@@ -159,6 +167,7 @@
           panel(r);
           var h = PM.ttTitulo(r, estado.dominio + ' · ' + etqPer(estado.per));
           Object.keys(MED).forEach(function (k) { h += PM.ttFila(MED[k].color, MED[k].nombre, txt(r, k), 'area'); });
+          if (esEst()) h += PM.ttPie('2020: estimación POPULI del empleo; el resto no se estima');
           return h;
         }, { trigger: 'item' }),
         series: [serie]
@@ -173,7 +182,7 @@
       var desc = MED[estado.medida].desc + '.' + (v != null && v19 != null && j19 !== estado.per ? ' En 2019: ' + fmt(v19) + '.' : '');
       var tabla = '<div class="ind">' + Object.keys(MED).map(function (k) { return '<span class="ind-n">' + MED[k].nombre + '</span><span class="ind-v">' + txt(r, k) + '</span>'; }).join('') + '</div>';
       var html = PM.pb(med().color, r, txt(r), desc).replace(/<\/div>$/, tabla + '</div>');
-      document.getElementById('panel').innerHTML = html + PM.ctx(lectura(r));
+      document.getElementById('panel').innerHTML = html + PM.ctx((esEst() ? 'Entre abril y diciembre de 2020 el INE no levantó la encuesta en el área rural: el empleo de cada actividad en 2020 es una <strong>estimación POPULI</strong> (primer trimestre observado; los otros tres, con la parte rural estimada con ' + L.METODO + '). La informalidad, el ingreso, las horas y el resto no se estiman. <a href="' + D.estimados.metodologia + '" target="_blank" rel="noopener">Ver metodología</a>. ' : '') + lectura(r));
     }
     function lectura(r) {
       var pe = val(r, 'pct_ocupados'), inf = val(r, 'informalidad'), ing = val(r, 'ingreso_real_mediana'), muj = val(r, 'mujeres_pct');

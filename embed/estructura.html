@@ -69,12 +69,21 @@
     var activas = {}; Object.keys(MED).forEach(function (m) { activas[m] = new Set(MED[m].capas.map(function (c) { return c.k; })); });
     var D, K, si = 0, grafico;
     var med = function () { return MED[estado.medida]; };
-    // valor de una capa = suma de sus categorías (null si el trimestre no tiene dato)
-    var capa = function (c, i) {
+    // valor de una capa = suma de sus categorías (null si el trimestre no tiene dato). En 2T-4T 2020 (sin encuesta rural)
+    // Bolivia y el área rural llevan la ESTIMACIÓN POPULI, aparte de la serie oficial y marcada (metodologia.html#hueco-2020)
+    var oficial = function (c, i) {
       var g = D.datos[estado.ambito][estado.medida], s = 0, alguno = false;
       c.de.forEach(function (x) { var v = g[x] && g[x][i]; if (v != null) { s += v; alguno = true; } });
       return alguno ? s : null;
     };
+    var estimada = function (c, i) {
+      var e = D.estimados && D.estimados[estado.ambito] && D.estimados[estado.ambito][estado.medida], s = 0, alguno = false;
+      if (!e) return null;
+      c.de.forEach(function (x) { var v = e[x] && e[x][K[i]]; if (v) { s += v[0]; alguno = true; } });
+      return alguno ? s : null;
+    };
+    var esEst = function (i) { return med().capas.every(function (c) { return oficial(c, i) == null; }) && estimada(med().capas[0], i) != null; };
+    var capa = function (c, i) { var v = oficial(c, i); return v != null ? v : estimada(c, i); };
 
     PM.cargar(['estructura.json']).then(function (r) {
       D = r[0]; K = D.periodos; estado.idx = K.length - 1;
@@ -90,7 +99,7 @@
       panel(estado.idx);
       PM.alCambiarTema(function () { cifras(); panel(estado.idx); });
       PM.preguntas(document.getElementById('preguntas'), PREGUNTAS);
-      document.getElementById('fuente').innerHTML = L.fuente({}, PM.fecha(K[K.length - 1]));
+      document.getElementById('fuente').innerHTML = L.fuente({}, PM.fecha(K[K.length - 1])) + L.notaEst(D).replace('línea punteada', 'barras tenues');
     }).catch(function (e) { console.error(e); PM.error(document.getElementById('chart')); });
 
     function pastillas() {
@@ -110,7 +119,10 @@
       si = PM.desde(K, estado.rango);
       var KV = K.slice(si), el = document.getElementById('chart');
       var series = med().capas.filter(function (c) { return activas[estado.medida].has(c.k); }).map(function (c) {
-        return PM.barra(c.color, { extra: { name: c.nombre, stack: 'e', barCategoryGap: '26%', data: KV.map(function (k, j) { return capa(c, si + j); }) } });
+        return PM.barra(c.color, { extra: { name: c.nombre, stack: 'e', barCategoryGap: '26%', data: KV.map(function (k, j) {
+          var v = capa(c, si + j);
+          return esEst(si + j) && v != null ? { value: v, itemStyle: { opacity: 0.42 } } : v;   // estimación: tenue
+        }) } });
       });
       return {
         grid: PM.grid({ top: 16 }),
@@ -119,12 +131,13 @@
         tooltip: PM.tooltip(function (ps) {
           if (!ps.length) return '';
           var i = ps[0].dataIndex; panel(si + i);
-          var h = PM.ttTitulo(PM.fecha(KV[i]), estado.ambito);
+          var h = PM.ttTitulo(PM.fecha(KV[i]), estado.ambito + (esEst(si + i) ? ' · estimación POPULI' : ''));
           ps.slice().reverse().forEach(function (p) {
             if (p.value == null) return;
             var c = med().capas.filter(function (q) { return q.nombre === p.seriesName; })[0];
             h += PM.ttFila(c.color, c.nombre, PM.pct(p.value, 1), 'area');
           });
+          if (esEst(si + i)) h += PM.ttPie('Sin encuesta rural: estimación POPULI (barras tenues)');
           return ps.every(function (p) { return p.value == null; }) ? PM.ttTitulo(PM.fecha(KV[i]), 'Sin dato: la encuesta no se levantó en el área rural') : h;
         }, { axisPointer: PM.sombraEje() }),
         series: series
@@ -133,19 +146,20 @@
     function panel(i) {
       if (i == null || !D || i < 0) return;
       estado.idx = i;
-      document.getElementById('panel-fecha').textContent = PM.fecha(K[i]);
+      document.getElementById('panel-fecha').textContent = PM.fecha(K[i]) + (esEst(i) ? ' · estimado' : '');
       var cs = med().capas, html = cs.slice().reverse().map(function (c) { var v = capa(c, i); return v == null ? '' : PM.pb(c.color, c.nombre, PM.pct(v, 1), null); }).join(''), t;
       if (capa(cs[0], i) == null) t = 'Sin dato para ' + estado.ambito + ' en este trimestre: entre abril y diciembre de 2020 la encuesta no se levantó en el área rural.';
       else if (estado.medida === 'cat_ocup') t = '<strong>' + PM.num((capa(cs[0], i) + capa(cs[1], i)) / 10, 1) + ' de cada 10 ocupados</strong> trabajan por cuenta propia o como familiares sin remuneración; sólo ' + PM.pct(capa(cs[2], i), 0) + ' son obreros o empleados.';
       else if (estado.medida === 'tam_cat') t = '<strong>' + PM.pct(capa(cs[0], i) + capa(cs[1], i), 0) + '</strong> de los ocupados trabaja solo o en establecimientos de hasta 4 personas; apenas ' + PM.pct(capa(cs[4], i), 0) + ' en unidades de 50 personas o más.';
       else t = '<strong>' + PM.pct(capa(cs[0], i), 0) + '</strong> de los ocupados trabaja en unidades del sector informal: sin registro tributario en el régimen general, sin contabilidad y de escala reducida.';
+      if (esEst(i)) t = 'Entre abril y diciembre de 2020 el INE no levantó la encuesta en el área rural: la composición es una <strong>estimación POPULI</strong>: las partes del área rural se estiman con ' + L.METODO + ' y se suman al área urbana observada. ' + t + ' <a href="' + D.metadata.estimados.metodologia + '" target="_blank" rel="noopener">Ver metodología</a>.';
       document.getElementById('panel').innerHTML = html + PM.ctx(t);
     }
     var PREGUNTAS = [
       ['¿Qué es la categoría ocupacional?', 'La relación de la persona con su trabajo: obrero o empleado (trabaja para otro por un salario), cuenta propia (trabaja solo, sin empleados), empleador o socio, familiar sin remuneración (ayuda en el negocio de un familiar sin paga), trabajador/a del hogar y cooperativista de producción. Antes de 2019 la encuesta separaba obrero y empleado; aquí se juntan con la regla del INE.'],
       ['¿Cómo se mide el tamaño?', 'Por el número de personas que trabajan en la empresa, negocio o lugar donde la persona trabaja (incluido el dueño). Un vendedor ambulante solo cuenta como establecimiento de 1 persona.'],
       ['¿Qué es el sector informal?', 'El tipo de unidad económica, según la metodología del INE: el Estado, las empresas públicas, las ONG y los organismos internacionales son formales; en el resto decide el NIT en el régimen general, la contabilidad y, si no se sabe, el tamaño (5 personas o más). Las trabajadoras del hogar forman el «sector hogares».'],
-      ['¿Por qué falta 2020 en Bolivia y el área rural?', 'Entre abril y diciembre de 2020 la encuesta se levantó por teléfono y sólo en el área urbana.']
+      ['¿Qué son las barras tenues de 2020?', 'Entre abril y diciembre de 2020 la encuesta se levantó por teléfono y sólo en el área urbana. Para Bolivia y el área rural, esos trimestres son una <strong>estimación POPULI</strong>: la composición del área rural se estima con un promedio de modelos de series de tiempo y se suma a la urbana observada. No es un dato del INE. <a href="../metodologia.html#hueco-2020" target="_blank" rel="noopener">Metodología</a>.']
     ];
   })();
   </script>

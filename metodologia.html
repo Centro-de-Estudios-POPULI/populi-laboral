@@ -35,6 +35,8 @@
     th{font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}
     td.n{text-align:right;font-family:'JetBrains Mono',monospace;white-space:nowrap}
     .tabla{overflow-x:auto}
+    #t-met th,#t-met td{padding-left:5px;padding-right:5px;font-size:.76rem}
+    #t-met thead th{white-space:normal;vertical-align:bottom}
     .refs li{font-size:.84rem}
     .pie{text-align:center;padding:28px 16px;font-size:.8rem;color:var(--muted);border-top:1px solid var(--border)}
   </style>
@@ -87,33 +89,60 @@
 
     <section id="hueco-2020">
       <h2>2020: los trimestres sin encuesta rural</h2>
-      <p>Entre abril y diciembre de 2020, por la cuarentena, el INE levantó la ECE por teléfono y sólo en el área urbana: apenas tres de cada diez conglomerados rurales tenían un número de contacto, y en el segundo trimestre no se encuestó ninguna vivienda rural (Nota técnica ECE 02/2020). El INE no publica el total de Bolivia ni el área rural de esos trimestres. En el monitor, esos trimestres se muestran con <strong>línea punteada</strong> y su intervalo de 95 % en una banda tenue: son una <strong>estimación POPULI</strong>, no datos del INE.</p>
+      <p>Entre abril y diciembre de 2020, por la cuarentena, el INE levantó la ECE por teléfono y sólo en el área urbana: apenas tres de cada diez conglomerados rurales tenían un número de contacto, y no se encuestó ni una vivienda rural en esos tres trimestres (Nota técnica ECE 02/2020; el microdato lo confirma). El INE no publica el total de Bolivia, el área rural ni los totales departamentales de esos trimestres. En el monitor se muestran como <strong>estimación POPULI</strong>, siempre aparte de los datos del INE: línea punteada con su intervalo de 95 % en una banda tenue, barras más claras en los gráficos de barras y la marca «estimado» en cada cifra.</p>
 
-      <h3>Qué se descartó</h3>
+      <h3>Qué se estima y qué no</h3>
       <ul>
-        <li><strong>Usar la Encuesta de Hogares 2020</strong>, que sí cubrió el área rural: en los mismos meses, la Encuesta de Hogares y la ECE difieren hasta 11 puntos en participación y hasta 3 en desocupación (son instrumentos distintos), así que su nivel no puede ocupar el lugar de la ECE.</li>
-        <li><strong>Predecir lo rural con lo urbano</strong>, que sí se observó en 2020: en años normales, los cambios del área urbana explican muy poco de los del área rural.</li>
+        <li><strong>Se estima:</strong> Bolivia, el área rural, Santa Cruz, La Paz y Cochabamba en desocupación, participación, ocupación, subocupación, subutilización, informalidad, asalariados, ingreso mediano (mensual y por hora) y ocupados bajo el salario mínimo; la estructura del empleo (categoría, tamaño y sector) y el empleo de cada actividad de Bolivia y del área rural; y el año 2020 de los nueve departamentos en el mapa.</li>
+        <li><strong>No se estima:</strong> el seguro de salud de los asalariados (la pregunta no se hizo ni en las ciudades entre abril de 2020 y fines de 2021: no hay de dónde sacar información), el ingreso de cada actividad y los ingresos por sexo o formalidad en el área rural (muy pocos casos por trimestre) y los flujos entre trimestres (sólo existen en el área urbana).</li>
       </ul>
 
-      <h3>El método: un modelo estructural de señal + ruido</h3>
-      <p>Es el que usan las oficinas de estadística cuando una encuesta de empleo tiene muestras chicas o datos faltantes: la Oficina de Estadísticas Laborales de Estados Unidos (BLS) para el desempleo de los estados, la oficina de estadística de los Países Bajos (CBS) para sus cifras oficiales mensuales —adaptado en la pandemia—, y la de Reino Unido (ONS). Cada estimación de la encuesta se trata como el valor verdadero más un error de muestreo; el valor verdadero tiene tendencia, estacionalidad trimestral y un componente irregular:</p>
-      <pre>estimación de la encuesta = valor verdadero + error de muestreo (varianza conocida, del diseño)
-valor verdadero           = nivel (o tendencia) + estacionalidad trimestral + irregular</pre>
-      <p>Los parámetros se estiman por máxima verosimilitud con el filtro de Kalman, y los trimestres faltantes los estima el suavizador de Kalman, que usa lo observado antes (hasta el primer trimestre de 2020) y después (desde el primer trimestre de 2021). Como la muestra rural de la ECE se visita una sola vez, sus errores de muestreo son independientes entre trimestres.</p>
+      <h3>Cuatro métodos candidatos</h3>
+      <p>Todos tratan cada cifra de la encuesta como el valor verdadero más un error de muestreo cuyo tamaño se conoce por el diseño (estrato y conglomerado), y estiman el valor verdadero de los trimestres faltantes con lo observado antes (hasta el primer trimestre de 2020) y después (desde el primer trimestre de 2021).</p>
+      <ul>
+        <li><strong>Interpolación lineal</strong>, con la estacionalidad de cada trimestre: lo que haría cualquiera. Es la referencia contra la que se mide a los demás.</li>
+        <li><strong>Univariado</strong>: un modelo estructural de señal + ruido sobre la serie rural sola (nivel o tendencia, estacionalidad trimestral e irregular; filtro y suavizador de Kalman). Es el que usan la Oficina de Estadísticas Laborales de Estados Unidos (BLS) para el desempleo de los estados y la oficina de estadística de los Países Bajos (CBS) para sus cifras mensuales. No mira lo urbano: si en el campo hubo un golpe en 2020, no lo ve.</li>
+        <li><strong>Diferencia con lo urbano</strong>: modela la brecha (en proporción) entre lo rural y lo urbano y la aplica al dato urbano, que sí se observó en 2020. Supone que el campo se movió como la ciudad: toma el golpe de 2020 <em>entero</em>.</li>
+        <li><strong>Bivariado</strong>: un modelo conjunto de lo rural y lo urbano con niveles correlacionados, como el que propusieron Harvey y Chung (2000) para la encuesta de empleo británica y que usa la CBS con series auxiliares. Toma el golpe urbano <em>en la medida</em> en que las dos series se movieron juntas en años normales.</li>
+      </ul>
 
-      <h3>Validación</h3>
-      <p>Para elegir y probar el modelo se escondieron los trimestres segundo a cuarto de cada año con datos (2016-2019 y 2022-2025) y se los predijo, como en la validación cruzada que usa la OIT. Error típico al predecir trimestres que sí se observaron:</p>
-      <div class="tabla"><table id="t-valid"><thead><tr><th>Indicador (área rural)</th><th>Modelo</th><th>Error típico</th><th>Sesgo</th><th>Cobertura del intervalo de 90 %</th></tr></thead><tbody></tbody></table></div>
-      <p>El filtro de Kalman tiende a subestimar su propio error (ignora la incertidumbre de los parámetros), por eso los intervalos publicados se amplían con el cociente entre el error observado en esta prueba y el predicho.</p>
+      <h3>Tres pruebas fuera de muestra</h3>
+      <p>Cada método se puso a prueba escondiendo cifras que sí se conocen y comparando lo que estima con lo que la encuesta midió (<span class="num" data-m="hueco.predicciones" data-fmt="miles"></span> predicciones en total):</p>
+      <ul>
+        <li><strong>Años normales, área rural de Bolivia</strong>: se esconden los trimestres segundo a cuarto de cada año con datos (2016-2019 y 2022-2025): <span class="num" data-m="hueco.pruebas.V1"></span> predicciones por indicador.</li>
+        <li><strong>Años normales, parte rural de cada departamento</strong>: lo mismo en las nueve series rurales departamentales, tan ruidosas como las que hay que estimar: <span class="num" data-m="hueco.pruebas.V1b"></span> por indicador.</li>
+        <li><strong>Pandemia</strong>: se esconde la parte <em>urbana</em> de cada departamento en abril-diciembre de 2020, que sí se observó, y se la estima con el resto del área urbana como compañera: <span class="num" data-m="hueco.pruebas.V2"></span> por indicador. Es la única prueba que mide si un método capta un golpe que no ve. Es optimista para los métodos que toman prestado de lo urbano: dos ciudades se parecen más entre sí que el campo a la ciudad.</li>
+      </ul>
+      <p>Error de cada método dividido por el de la interpolación lineal (1,00 = igual que interpolar; menos es mejor; en negrita, el menor de cada prueba):</p>
+      <div class="tabla"><table id="t-met"><thead>
+        <tr><th rowspan="2">Indicador</th><th colspan="4" style="text-align:center">Años normales (área rural y departamentos)</th><th colspan="4" style="text-align:center">Pandemia (ciudades escondidas)</th></tr>
+        <tr><th>Univariado</th><th>Diferencia</th><th>Bivariado</th><th>Promedio</th><th>Univariado</th><th>Diferencia</th><th>Bivariado</th><th>Promedio</th></tr>
+      </thead><tbody></tbody></table></div>
 
-      <h3>El total de Bolivia</h3>
-      <p>Bolivia combina el área urbana observada con el área rural estimada, cada una con su peso en la población (la población en edad de trabajar para la participación y la ocupación; la fuerza de trabajo para la desocupación; los ocupados para la informalidad). En todos los trimestres con encuesta completa, esta combinación reproduce exactamente el total oficial de Bolivia. La mediana del ingreso no se puede combinar así: para Bolivia queda sin dato. Los departamentos tampoco se estiman.</p>
+      <h3>La decisión: un promedio de modelos</h3>
+      <p>Ningún método gana en todo. En años normales los tres empatan: sin un golpe grande, mirar a la ciudad casi no ayuda. En la pandemia, el univariado no ve el golpe y en participación y ocupación se equivoca el doble que los otros; pero el bivariado falla en la desocupación y la diferencia en la informalidad. Ante esa incertidumbre sobre cuál es el modelo correcto, la respuesta robusta es combinarlos (Bates y Granger 1969; Timmermann 2006). La regla se fijó <strong>antes</strong> de ver los resultados:</p>
+      <ul>
+        <li>para cada indicador se toma la mejor variante del univariado, la diferencia y el bivariado; queda afuera el que se equivoca más de 25 % por encima del mejor en los años normales;</li>
+        <li>la estimación es el <strong>promedio</strong> de los que quedan, con pesos inversos a su error en años normales;</li>
+        <li>el intervalo suma la incertidumbre de cada modelo y el <strong>desacuerdo entre ellos</strong>, y se amplía con el cociente entre el error observado en las pruebas y el que el modelo cree tener (el filtro de Kalman subestima su propio error: van den Brakel y Krieg 2017). Se prefirió esta calibración al <em>bootstrap</em> de Pfeffermann y Tiller (2005) porque mide el error total, incluido el de usar un modelo equivocado, y no sólo el de estimar sus parámetros.</li>
+      </ul>
+      <p>El resultado: el promedio es tan bueno como el mejor método en años normales, en la pandemia reduce a la mitad el error del univariado en participación y ocupación, y nunca es el peor. Su intervalo de 90 % contuvo el valor medido en el <span class="num" data-m="hueco.cobertura90.V1"></span> % de los casos del área rural, el <span class="num" data-m="hueco.cobertura90.V1b"></span> % de los departamentos rurales y el <span class="num" data-m="hueco.cobertura90.V2"></span> % en la prueba de pandemia: los intervalos aguantan también el golpe.</p>
 
-      <h3>Resultados</h3>
+      <h3>De lo rural al total</h3>
+      <ul>
+        <li><strong>Totales</strong>: Bolivia (y cada departamento) es el área urbana observada más la rural estimada, cada tasa ponderada por su propio denominador (población en edad de trabajar, fuerza de trabajo, ocupados, ocupados con dato de ingreso). Es una identidad: en todos los trimestres con encuesta completa reproduce el total oficial al decimal.</li>
+        <li><strong>Coherencia entre departamentos</strong>: las partes rurales de los nueve departamentos se ajustan a prorrata para que sus personas sumen el área rural de Bolivia, que se estima con más muestra (Pfeffermann y Tiller 2006). Los ajustes de población y ocupados no pasan de 1 %; los de desocupados van de <span class="num" data-m="hueco.coherencia.des.0" data-fmt="dec2"></span> a <span class="num" data-m="hueco.coherencia.des.1" data-fmt="dec2"></span> y los de subocupados de <span class="num" data-m="hueco.coherencia.tsub.0" data-fmt="dec2"></span> a <span class="num" data-m="hueco.coherencia.tsub.1" data-fmt="dec2"></span>.</li>
+        <li><strong>Cuando la muestra no tiene casos</strong> (por ejemplo, ningún desocupado en el campo de Potosí en un trimestre), el diseño da 0 con error 0 y el modelo tomaría ese 0 por exacto: se usa el error típico de la propia serie.</li>
+        <li><strong>Medianas del ingreso</strong>: dos medianas no se suman. Para Bolivia y los departamentos se arma la distribución del trimestre como una <strong>mezcla</strong>: los ingresos urbanos observados más una distribución rural con la forma de los trimestres vecinos con dato, llevada a la mediana rural estimada y con el peso de los ocupados rurales estimados. Probada en los años con dato (con la mediana rural verdadera), la mezcla reproduce la mediana de Bolivia con un error típico de <span class="num" data-m="hueco.mezcla_error_pct.Bolivia" data-fmt="dec2"></span> % (Santa Cruz <span class="num" data-m="hueco.mezcla_error_pct.Santa Cruz" data-fmt="dec2"></span> %, La Paz <span class="num" data-m="hueco.mezcla_error_pct.La Paz" data-fmt="dec2"></span> %, Cochabamba <span class="num" data-m="hueco.mezcla_error_pct.Cochabamba" data-fmt="dec2"></span> %); ese error entra en el intervalo, junto con el de la mediana rural, por simulación.</li>
+        <li><strong>Estructura y actividades</strong>: las partes del área rural (categorías, tamaños, sectores, actividades) se estiman igual, se reescalan para que sumen 100 y se multiplican por los ocupados rurales estimados.</li>
+        <li><strong>El año 2020</strong> (mapa y actividades) junta los cuatro trimestres como el resto de los años: el primero observado y los otros tres estimados. Aplicada a 2019, la misma cuenta reproduce el dato anual exacto.</li>
+      </ul>
+
+      <h3>Resultados (estimación e intervalo de 95 %)</h3>
       <div class="tabla"><table id="t-res"><thead><tr><th>Indicador</th><th>2T-2020</th><th>3T-2020</th><th>4T-2020</th></tr></thead><tbody></tbody></table></div>
 
-      <h3>Límite</h3>
-      <div class="caja">El modelo no puede ver un golpe pasajero en el área rural que se haya revertido antes de enero de 2021. Como prueba de sensibilidad —a la manera de la CBS—, si el área rural hubiera sido tan volátil como la urbana en 2020, el intervalo de 95 % de la desocupación rural del tercer trimestre iría de <span class="num" id="s-td"></span> y el de la participación de <span class="num" id="s-tgp"></span>. Por eso estas cifras se muestran siempre marcadas como estimación, con su intervalo, y nunca mezcladas con las del INE.</div>
+      <h3>Límites</h3>
+      <div class="caja">Ningún método puede medir lo que no se encuestó. La prueba de pandemia se hizo entre ciudades; si el campo sufrió un golpe muy distinto al urbano —mayor o menor— y se revirtió antes de enero de 2021, el dato no lo puede ver. Por eso las estimaciones van siempre marcadas, con su intervalo, y nunca mezcladas con las cifras del INE.</div>
     </section>
 
     <section id="referencias">
@@ -128,6 +157,10 @@ valor verdadero           = nivel (o tendencia) + estacionalidad trimestral + ir
         <li>van den Brakel, J., Souren, M. y Krieg, S. (2022). <a href="https://econpapers.repec.org/RePEc:bla:jorssa:v:185:y:2022:i:4:p:1560-1583" target="_blank" rel="noopener">Estimating monthly labour force figures during the COVID-19 pandemic in the Netherlands</a>. <em>Journal of the Royal Statistical Society A</em> 185(4).</li>
         <li>ONS. <a href="https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/methodologies/experimentalmodelbasedsinglemonthestimatesforthelabourforcesurveymethodsexplained" target="_blank" rel="noopener">Model-based single-month estimates for the Labour Force Survey: methods explained</a>.</li>
         <li>OIT. <a href="https://ilostat.ilo.org/methods/concepts-and-definitions/ilo-modelled-estimates/" target="_blank" rel="noopener">ILO modelled estimates: methodological overview</a>.</li>
+        <li>Harvey, A. C. y Chung, C.-H. (2000). <a href="https://ideas.repec.org/a/bla/jorssa/v163y2000i3p303-309.html" target="_blank" rel="noopener">Estimating the underlying change in unemployment in the UK</a>. <em>Journal of the Royal Statistical Society A</em> 163(3).</li>
+        <li>Pfeffermann, D. y Tiller, R. (2005). <a href="https://eprints.soton.ac.uk/9731/" target="_blank" rel="noopener">Bootstrap approximation to prediction MSE for state-space models with estimated parameters</a>. <em>Journal of Time Series Analysis</em> 26(6). · Pfeffermann, D. y Tiller, R. (2006). <a href="https://eprints.soton.ac.uk/17487" target="_blank" rel="noopener">Small-area estimation with state-space models subject to benchmark constraints</a>. <em>Journal of the American Statistical Association</em> 101(476).</li>
+        <li>Bates, J. M. y Granger, C. W. J. (1969). The combination of forecasts. <em>Operational Research Quarterly</em> 20(4). · Timmermann, A. (2006). Forecast combinations. En <em>Handbook of Economic Forecasting</em>, vol. 1. Elsevier.</li>
+        <li>Schiavoni, C., Koopman, S. J., Palm, F., Smeekes, S. y van den Brakel, J. (2021). <a href="https://www.cbs.nl/-/media/_pdf/2021/08/time-varying-cor.pdf" target="_blank" rel="noopener">Documento de discusión de la CBS sobre la correlación cambiante entre la encuesta de empleo y una serie auxiliar</a>: la razón para no fiarse de una sola correlación estimada en años normales.</li>
         <li>Harvey, A. C. (1989). <em>Forecasting, Structural Time Series Models and the Kalman Filter</em>. Cambridge University Press. · Durbin, J. y Koopman, S. J. (2012). <em>Time Series Analysis by State Space Methods</em>, 2.ª ed. Oxford University Press.</li>
       </ol>
     </section>
@@ -148,10 +181,16 @@ valor verdadero           = nivel (o tendencia) + estacionalidad trimestral + ir
       });
       document.getElementById('gen').textContent = 'cifras generadas el ' + M.generado;
       var H = M.hueco; if (!H) return;
-      var unidad = function (k, x) { return k === 'ylab_med' ? 'Bs ' + nb(x, 0) : nb(x, 2) + ' pp'; };
-      document.querySelector('#t-valid tbody').innerHTML = ORDEN.map(function (k) {
-        var v = H.validacion.filter(function (x) { return x.indicador === k; })[0]; if (!v) return '';
-        return '<tr><td>' + NOM[k] + '</td><td>' + (MOD[v.modelo] || v.modelo) + '</td><td class="n">±' + unidad(k, v.rmse) + '</td><td class="n">' + (v.sesgo >= 0 ? '+' : '−') + unidad(k, Math.abs(v.sesgo)) + '</td><td class="n">' + nb(100 * v.cobertura_90, 0) + ' %</td></tr>';
+      var NUC = ['td', 'tgp', 'to', 'tsub', 'lu4', 'toi', 'tosi', 'bajo_smn', 'ylab_med'];
+      var NOM2 = { td: 'Desocupación', tgp: 'Participación', to: 'Ocupación', tsub: 'Subocupación por horas', lu4: 'Subutilización amplia (LU4)', toi: 'Ocupación informal', tosi: 'Sector informal', bajo_smn: 'Bajo el salario mínimo', ylab_med: 'Ingreso mediano' };
+      var MET = ['univariado', 'diferencia', 'bivariado', 'promedio'];
+      document.querySelector('#t-met tbody').innerHTML = NUC.map(function (k) {
+        var x = H.errores_relativos.filter(function (r) { return r.indicador === k; })[0]; if (!x) return '';
+        var celdas = ['normal', 'pandemia'].map(function (g) {
+          var vals = MET.map(function (m) { return x[g + '_' + m]; }), min = Math.min.apply(null, vals.filter(function (v) { return v != null; }));
+          return vals.map(function (v) { return '<td class="n">' + (v === min ? '<strong>' + nb(v, 2) + '</strong>' : nb(v, 2)) + '</td>'; }).join('');
+        }).join('');
+        return '<tr><td>' + NOM2[k] + '</td>' + celdas + '</tr>';
       }).join('');
       var celda = function (d, k, p) {
         var x = H.resultados.filter(function (r) { return r.dominio === d && r.indicador === k && r.periodo === p; })[0];
@@ -160,13 +199,13 @@ valor verdadero           = nivel (o tendencia) + estacionalidad trimestral + ir
         return '<td class="n">' + nb(x.estimado, dec) + ' <span style="color:#64748B">(' + nb(x.li95, dec) + '–' + nb(x.ls95, dec) + ')</span></td>';
       };
       var filas = '';
-      [['Bolivia', ['td', 'tgp', 'to', 'toi', 'lu4']], ['Rural', ['td', 'tgp', 'to', 'toi', 'ylab_med']]].forEach(function (g) {
-        filas += '<tr><th colspan="4" style="color:#001219">' + (g[0] === 'Bolivia' ? 'Bolivia (área urbana observada + área rural estimada)' : 'Área rural') + '</th></tr>';
-        g[1].forEach(function (k) { filas += '<tr><td>' + NOM[k] + (k === 'ylab_med' ? '' : ' (%)') + '</td>' + ['2020-T2', '2020-T3', '2020-T4'].map(function (p) { return celda(g[0], k, p); }).join('') + '</tr>'; });
+      [['Bolivia', 'Bolivia (área urbana observada + área rural estimada)', ['td', 'tgp', 'toi', 'lu4', 'ylab_med']],
+       ['Rural', 'Área rural', ['td', 'tgp', 'toi', 'ylab_med']],
+       ['Santa Cruz', 'Santa Cruz', ['td', 'tgp', 'ylab_med']], ['La Paz', 'La Paz', ['td', 'tgp', 'ylab_med']], ['Cochabamba', 'Cochabamba', ['td', 'tgp', 'ylab_med']]].forEach(function (g) {
+        filas += '<tr><th colspan="4" style="color:#001219">' + g[1] + '</th></tr>';
+        g[2].forEach(function (k) { filas += '<tr><td>' + NOM[k] + (k === 'ylab_med' ? '' : ' (%)') + '</td>' + ['2020-T2', '2020-T3', '2020-T4'].map(function (p) { return celda(g[0], k, p); }).join('') + '</tr>'; });
       });
       document.querySelector('#t-res tbody').innerHTML = filas;
-      var s = function (k) { var x = H.sensibilidad.filter(function (r) { return r.indicador === k && r.periodo === '2020-T3'; })[0]; return x ? nb(x.li95, 1) + ' a ' + nb(x.ls95, 1) + ' %' : '—'; };
-      document.getElementById('s-td').textContent = s('td'); document.getElementById('s-tgp').textContent = s('tgp');
     });
   })();
   </script>

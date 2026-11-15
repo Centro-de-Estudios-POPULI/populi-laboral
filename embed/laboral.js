@@ -51,6 +51,7 @@
   // La serie oficial queda vacía (como en el INE); la estimación va aparte (D.estimados[dominio][clave][periodo] =
   // [estimado, li95, ls95]) y se dibuja como TRAMO PUNTEADO que une los trimestres observados de cada lado, con el
   // intervalo de 95 % como banda tenue. Método: metodologia.html#hueco-2020.
+  L.METODO = 'un promedio de tres modelos estructurales de series de tiempo, validado escondiendo trimestres conocidos (también los de la pandemia en las ciudades)';
   L.est = function (D, dom, clave, k) {
     var e = D.estimados && D.estimados[dom] && D.estimados[dom][clave];
     return e && e[k] ? { v: e[k][0], li: e[k][1], ls: e[k][2] } : null;
@@ -92,11 +93,11 @@
       var e = L.est(D, dom, f.k, k);
       if (e) h += PM.ttFila(f.color, f.nombre, f.fmt(e.v), 'punteada');
     });
-    return h ? h + PM.ttPie('Estimación POPULI (sin encuesta rural): modelo estructural. Intervalo de 95 % en la banda') : '';
+    return h ? h + PM.ttPie('Estimación POPULI (sin encuesta rural): promedio de modelos estructurales. Intervalo de 95 % en la banda') : '';
   };
   L.notaEst = function (D) {
     var m = D.metadata && D.metadata.estimados;
-    return m ? ' · <strong>2T-4T 2020</strong>: estimación POPULI para Bolivia y el área rural (línea punteada; el INE no levantó el área rural), <a href="' + m.metodologia + '" target="_blank" rel="noopener">ver metodología</a>' : '';
+    return m ? ' · <strong>2T-4T 2020</strong>: estimación POPULI (línea punteada; el INE no levantó el área rural), <a href="' + m.metodologia + '" target="_blank" rel="noopener">ver metodología</a>' : '';
   };
   window.L = L;
 })();

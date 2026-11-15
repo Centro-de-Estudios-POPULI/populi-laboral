@@ -148,7 +148,7 @@
       var todas = MEDIDAS.informalidad.series.concat(MEDIDAS.proteccion.series);
       var html = todas.filter(function (s) { return v(s.k) != null; }).map(function (s) { return PM.pb(s.color, s.largo, PM.pct(v(s.k), 1), s.desc + (esEst ? '.' + ic(s.k) : '')); }).join('');
       var toi = v('toi'), txt;
-      if (esEst && toi != null) txt = 'Entre abril y diciembre de 2020 el INE no levantó la encuesta en el área rural: la cifra es una <strong>estimación POPULI</strong> con un modelo estructural de series de tiempo. Ocupación informal: <strong>' +
+      if (esEst && toi != null) txt = 'Entre abril y diciembre de 2020 el INE no levantó la encuesta en el área rural: la cifra es una <strong>estimación POPULI</strong> con ' + L.METODO + '. Ocupación informal: <strong>' +
         PM.pct(toi, 1) + '</strong>. <a href="' + M.estimados.metodologia + '" target="_blank" rel="noopener">Ver metodología</a>.';
       else if (toi == null) txt = 'Sin dato para ' + estado.ambito + ' en este trimestre.';
       else {

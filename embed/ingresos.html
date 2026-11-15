@@ -119,7 +119,7 @@
         return PM.linea(s.color, { ancho: s.ancho, extra: { name: s.nombre, data: data, connectNulls: false, smooth: true, smoothMonotone: 'x',
           z: s.ancho > 2 ? 4 : 2, markPoint: u >= 0 ? PM.puntoFinal(s.color, u, data[u]) : undefined } });
       });
-      // 2T-4T 2020: el ingreso rural es estimación POPULI (punteado + banda); la mediana de Bolivia no se puede armar
+      // 2T-4T 2020: estimación POPULI (punteado + banda); en Bolivia y los departamentos, mediana por mezcla de distribuciones
       GRUPOS[grupo()].filter(function (s) { return activas[grupo()].has(s.k); }).forEach(function (s) {
         series = series.concat(L.tramo(D, estado.ambito, s.k, KV, S(s.k).slice(si), s.color, s.ancho));
       });
@@ -153,9 +153,10 @@
       var filas = GRUPOS[grupo()].filter(function (s) { return v(s.k) != null; }).map(function (s) {
         return PM.pb(s.color, s.largo, grupo() === 'minimo' ? PM.pct(v(s.k), 1) : L.bs(v(s.k)), null); }).join('');
       var y = v('ylab_med'), txt;
-      if (esEst) txt = 'Entre abril y diciembre de 2020 el INE no levantó la encuesta en el área rural: el ingreso mediano rural de <strong>' + L.bs(y) +
-        '</strong> es una <strong>estimación POPULI</strong> (intervalo de 95 %: ' + L.bs(esEst.li) + ' a ' + L.bs(esEst.ls) + ') con un modelo estructural de series de tiempo. <a href="' + M.estimados.metodologia + '" target="_blank" rel="noopener">Ver metodología</a>.';
-      else if (y == null) txt = 'Sin dato para ' + estado.ambito + ' en este trimestre' + (/2020-T[234]/.test(k) && estado.ambito === 'Bolivia' ? ': sin encuesta rural, y la mediana de Bolivia no se puede armar sumando la urbana y la rural estimada.' : '.');
+      if (esEst) txt = 'Entre abril y diciembre de 2020 el INE no levantó la encuesta en el área rural: el ingreso mediano de <strong>' + L.bs(y) +
+        '</strong> es una <strong>estimación POPULI</strong> (intervalo de 95 %: ' + L.bs(esEst.li) + ' a ' + L.bs(esEst.ls) + ')' +
+        (estado.ambito === 'Rural' ? ', con ' + L.METODO : ': la mediana del área rural, estimada con ' + L.METODO + ', se mezcla con la distribución de los ingresos urbanos observados') + '. <a href="' + M.estimados.metodologia + '" target="_blank" rel="noopener">Ver metodología</a>.';
+      else if (y == null) txt = 'Sin dato para ' + estado.ambito + ' en este trimestre.';
       else {
         var a = L.haceUnAnio(K, i), d = a >= 0 ? cambio(y, S('ylab_med')[a]) : null;
         var b19 = ['2019-T1', '2019-T2', '2019-T3', '2019-T4'].map(function (q) { return S('ylab_med')[K.indexOf(q)]; }).filter(function (x) { return x != null; });

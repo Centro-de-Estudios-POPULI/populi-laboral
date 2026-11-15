@@ -75,7 +75,7 @@
       'Departamento': [['Santa Cruz', 'Santa Cruz'], ['La Paz', 'La Paz'], ['Cochabamba', 'Cochabamba']] };
     var MIN_N = 120;   // casos en la ventana de cuatro trimestres para mostrar un panel
     var estado = { variable: 'empleo', medida: 'nivel', base: '2019', escala: 'propia', dominio: 'Bolivia', idx: null, k: null };
-    var D, T, X, RAMAS, BASES, S = {}, NIV = {}, ORDEN = [], I = [], grafico, geo = [], hoverG = null;
+    var D, T, X, RAMAS, BASES, S = {}, NIV = {}, ESTV = [], ORDEN = [], I = [], grafico, geo = [], hoverG = null;
     var activas = new Set(['tot', '_fija']);
     PM.imagen = { proporcion: 1 };
 
@@ -109,7 +109,8 @@
       panel(estado.idx, null);
       PM.alCambiarTema(function () { cifras(); panel(estado.idx, estado.k); });
       PM.preguntas(document.getElementById('preguntas'), PREGUNTAS);
-      document.getElementById('fuente').innerHTML = L.fuente({}, PM.fecha(T[T.length - 1])) + ' · IPC: INE';
+      document.getElementById('fuente').innerHTML = L.fuente({}, PM.fecha(T[T.length - 1])) + ' · IPC: INE' +
+        (D.estimados ? ' · <strong>2T-4T 2020</strong>: empleo de Bolivia y del área rural, estimación POPULI (línea punteada), <a href="' + D.estimados.metodologia + '" target="_blank" rel="noopener">ver metodología</a>' : '');
     }).catch(function (e) { console.error(e); PM.error(document.getElementById('chart')); });
 
     function pastillas() {
@@ -134,8 +135,22 @@
         });
       };
       S = {}; NIV = {};
-      var series = { tot: { s: G['total_' + v], n: null } };
-      RAMAS.forEach(function (r) { series[r] = { s: G[v][r], n: G['n_' + v][r] }; });
+      // 2T-4T 2020 sin encuesta rural: en Bolivia y el área rural, el EMPLEO de cada actividad lleva la estimación POPULI
+      // (aparte de la serie oficial); las ventanas que la incluyen se dibujan punteadas. El ingreso no se estima.
+      var E = v === 'empleo' && D.estimados && D.estimados[estado.dominio];
+      var marca = T.map(function (t) { return !!(E && E.total_empleo[t]); });
+      var conEst = function (s, e) { return !e ? s : T.map(function (t, i) { return s[i] != null ? s[i] : e[t] ? e[t][0] : null; }); };
+      var nEst = function (nn) {             // casos de un trimestre estimado: los del último trimestre observado (para la regla de MIN_N)
+        if (!nn || !E) return nn; var u = null;
+        return nn.map(function (x, i) { if (!marca[i]) { u = x; return x; } return u; });
+      };
+      ESTV = T.map(function (t, i) {
+        var w = estado.medida === 'nivel' ? 4 : 8;
+        for (var j = Math.max(0, i - w + 1); j <= i; j++) if (marca[j]) return true;
+        return false;
+      });
+      var series = { tot: { s: conEst(G['total_' + v], E && E.total_empleo), n: null } };
+      RAMAS.forEach(function (r) { series[r] = { s: conEst(G[v][r], E && E.empleo[r]), n: nEst(G['n_' + v][r]) }; });
       Object.keys(series).forEach(function (k) {
         var p = prom(series[k].s, series[k].n); NIV[k] = p;
         // base: el promedio de los cuatro trimestres del año base (el promedio móvil que cierra en su T4)
@@ -274,12 +289,21 @@
         if (conTot && k !== 'tot') series.push({ type: 'line', id: 'tot' + g, name: '_tot' + g, xAxisIndex: g, yAxisIndex: g, data: pts.tot, silent: true, z: 2, connectNulls: false,
           symbol: 'none', lineStyle: { width: 1, color: pz, type: [5, 4] }, tooltip: { show: false }, emphasis: { disabled: true } });
         var ult = dat.length - 1; while (ult > 0 && dat[ult][1] == null) ult--;
+        var eI = I.map(function (i) { return !!ESTV[i]; });
+        var sol = dat.map(function (p, j) { return eI[j] ? [p[0], null] : p; });
+        var pun = dat.map(function (p, j) { return eI[j] || (j > 0 && eI[j - 1]) || (j < dat.length - 1 && eI[j + 1]) ? p : [p[0], null]; });
+        var trazo = function (id, datos, tipo) {
+          return { type: 'line', id: id + g, xAxisIndex: g, yAxisIndex: g, data: datos, silent: true, symbol: 'none', z: 3, connectNulls: false,
+            lineStyle: { width: 1.5, color: tinta, cap: 'round', join: 'round', type: tipo }, tooltip: { show: false }, emphasis: { disabled: true } };
+        };
+        series.push(trazo('sol', sol, 'solid'));
+        if (eI.some(Boolean)) series.push(trazo('est', pun, [4, 3]));
         series.push({ type: 'line', id: 'l' + g, name: nom(k), xAxisIndex: g, yAxisIndex: g, z: 4, connectNulls: false,
           data: dat.map(function (p, j) {
             var cierre = (p[1] != null && Math.abs(p[0] % 1 - 0.75) < 1e-6) || j === ult;
             return cierre ? { value: p, symbol: 'circle', symbolSize: j === ult ? 7 : 5 } : { value: p, symbol: 'none' };
           }),
-          showSymbol: true, symbol: 'none', lineStyle: { width: 1.5, color: tinta, cap: 'round', join: 'round' },
+          showSymbol: true, symbol: 'none', lineStyle: { width: 0 },
           itemStyle: { color: card, borderColor: tinta, borderWidth: 1.25 }, emphasis: { disabled: true },
           markLine: { silent: true, symbol: 'none', animation: false, label: { show: false },
             lineStyle: { color: dk ? 'rgba(226,232,240,.7)' : 'rgba(0,18,25,.65)', width: 0.9, type: [4, 3] }, data: [{ yAxis: ref }] } });
@@ -300,7 +324,8 @@
           var h = PM.ttTitulo(nom(k) + ' · ' + PM.fecha(T[i]), nomDom() + (estado.medida === 'nivel' ? ' · cuatro trimestres · ' + estado.base + ' = 100' : ' · crecimiento de 4 trimestres'));
           h += PM.ttFila(TOT, nom(k), fmt(v), 'linea');
           if (k !== 'tot' && tv != null) h += PM.ttFila(pz, nom('tot'), fmt(tv), 'punteada');
-          return h + PM.ttTotal(estado.variable === 'empleo' ? 'Ocupados (promedio)' : 'Ingreso mediano', abs(NIV[k][i]));
+          h += PM.ttTotal(estado.variable === 'empleo' ? 'Ocupados (promedio)' : 'Ingreso mediano', abs(NIV[k][i]));
+          return ESTV[i] ? h + PM.ttPie('Incluye 2T-4T 2020: estimación POPULI (sin encuesta rural)') : h;
         }, chico ? {
           axisPointer: { type: 'line' },
           position: function (pt, params, dom, rect, size) {
@@ -343,7 +368,7 @@
           '</span><span class="rk-b">' + barra + '</span><span class="rk-v" style="color:' + (x.k === 'tot' ? PM.col(TOT) : PM.tx(lado(x.v))) + '">' + fmt(x.v) + '</span></div>';
       }).join('') + '</div>';
       document.getElementById('panel-fecha').textContent = PM.fecha(T[i]) + ' · ' + estado.dominio;
-      document.getElementById('panel').innerHTML = html + PM.ctx(lectura(i));
+      document.getElementById('panel').innerHTML = html + PM.ctx((ESTV[i] ? 'Esta ventana incluye trimestres de 2020 sin encuesta rural: el empleo de esos trimestres es una <strong>estimación POPULI</strong> (línea punteada). <a href="' + D.estimados.metodologia + '" target="_blank" rel="noopener">Ver metodología</a>. ' : '') + lectura(i));
     }
 
     PM.leyendaImagen = function () {
@@ -362,7 +387,7 @@
       ['¿Por qué el promedio de cuatro trimestres?', 'El empleo de cada actividad tiene estación (la cosecha, las fiestas de fin de año) y, en las actividades chicas, un error de muestreo alto en un solo trimestre. El promedio de los últimos cuatro trimestres quita la estación y reduce el error a la mitad. En el cuarto trimestre de cada año es el promedio del año (el punto hueco).'],
       ['¿Qué es el ingreso de cada actividad?', 'La mediana del ingreso mensual de la ocupación principal de quienes trabajan en esa actividad, en bolivianos del 1.er trimestre de 2026 (con el IPC del INE). En las actividades donde casi todos son asalariados (educación, salud, administración pública) se acerca al salario; en el comercio o el agro, a la ganancia de un negocio por cuenta propia. El índice promedia las medianas de cuatro trimestres.'],
       ['¿Qué año base conviene?', '<strong>2019</strong>: el último año antes de la pandemia. <strong>2017</strong>: un año de la serie larga antes de la desaceleración. <strong>' + (BASES ? BASES[BASES.length - 1] : '2025') + '</strong>: el último año completo, para ver el cambio más reciente.'],
-      ['¿Qué quiere decir «pocos casos»?', 'Para mostrar un panel, la ventana de cuatro trimestres tiene que sumar al menos ' + MIN_N + ' personas encuestadas en esa actividad. En los departamentos, las actividades chicas (minería, electricidad) suelen no llegar. En el área rural y en los totales departamentales falta 2020: la encuesta no se levantó en el campo de abril a diciembre.']
+      ['¿Qué quiere decir «pocos casos»?', 'Para mostrar un panel, la ventana de cuatro trimestres tiene que sumar al menos ' + MIN_N + ' personas encuestadas en esa actividad. En los departamentos, las actividades chicas (minería, electricidad) suelen no llegar. Entre abril y diciembre de 2020 la encuesta no se levantó en el campo: en Bolivia y el área rural, el <strong>empleo</strong> de esos trimestres es una estimación POPULI (línea punteada); el ingreso y los totales departamentales quedan sin dato.']
     ];
   })();
   </script>
