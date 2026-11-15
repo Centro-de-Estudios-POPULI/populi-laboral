@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light" style="--acento:#0A9396">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Empleo e ingresos por actividad, en el tiempo · Populi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="comun/monitor.css" />
+  <link rel="stylesheet" href="laboral.css" />
+  <style>
+    /* Ranking del trimestre en el panel de lectura (el de los sectores del PIB): barras desde la base hacia cada lado */
+    .rk { margin: 4px 0 10px; }
+    .rk-t { font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 5px; }
+    .rk-f { display: grid; grid-template-columns: minmax(0, 1fr) 34% 3.9rem; align-items: center; gap: 8px; padding: 2px 4px; }
+    .rk-f.tot { border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-bottom: 3px; }
+    .rk-f.sel { background: var(--suave); box-shadow: inset 2px 0 0 var(--acento); }
+    .rk-n { font-size: .68rem; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rk-f.tot .rk-n { font-weight: 700; color: var(--tinta); }
+    .rk-b { position: relative; height: 9px; }
+    .rk-b::before { content: ''; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--tenue); }
+    .rk-b i { position: absolute; top: 0; bottom: 0; }
+    .rk-v { font: 600 .68rem/1.3 'JetBrains Mono', monospace; text-align: right; white-space: nowrap; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <script src="comun/monitor.js"></script>
+  <script src="laboral.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="sec-hd">
+      <div class="sec-title"><span class="accent-bar"></span>Cada actividad en el tiempo</div>
+      <div class="sec-sub" id="sub">Ocupados de cada actividad (promedio de cuatro trimestres) frente al año base (= 100)</div>
+    </div>
+
+    <div class="hz-bar">
+      <div class="hz-item"><span class="hz-lbl">Variable</span><div class="hz-grp" id="b-variable"></div></div>
+      <div class="hz-item"><span class="hz-lbl">Medida</span><div class="hz-grp" id="b-medida"></div></div>
+      <div class="hz-item" id="it-base"><span class="hz-lbl">Año base</span><div class="hz-grp" id="b-base"></div></div>
+      <div class="hz-item"><span class="hz-lbl">Escala</span><div class="hz-grp" id="b-escala"></div></div>
+      <div class="hz-item"><span class="hz-lbl">Dónde</span><div class="hz-grp" id="b-dominio"></div></div>
+    </div>
+
+    <div class="kpi-grid" id="kpis"></div>
+
+    <div class="main-grid">
+      <div class="chart-card">
+        <div class="chart-ctrl"><div class="tog-grp" id="pastillas"></div></div>
+        <div class="grafico" id="chart"><div class="loading"><div class="spinner"></div><span>Cargando las actividades…</span></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-hd"><span class="panel-hd-t">Lectura del indicador</span><span class="panel-hd-d" id="panel-fecha"></span></div>
+        <div class="panel-body" id="panel"></div>
+      </div>
+    </div>
+
+    <div class="edu-grid" id="preguntas"></div>
+    <div class="source"><span class="source-txt" id="fuente"></span></div>
+  </div>
+
+  <script>
+  (function () {
+    var C = PM.C, NB = ' ';
+    // El lenguaje de los paneles es el de «Cada actividad frente a su punto de partida» (Monitor de Actividad):
+    // la línea en TINTA, el relleno por signo contra la base (turquesa arriba, rojo abajo, cruce interpolado),
+    // el total gris punteado y la cifra grande bajo el nombre.
+    var ARRIBA = { claro: '#0A9396', oscuro: '#94D2BD' }, ABAJO = { claro: '#C71E1D', oscuro: '#E8706B' }, TOT = C.tinta;
+    var CORTO = { 'Servicios financieros, profesionales y TIC': 'Financieros y profesionales', 'Transporte y almacenamiento': 'Transporte',
+      'Industria manufacturera': 'Manufactura', 'Electricidad, gas y agua': 'Electricidad, gas y agua', 'Administración pública': 'Administración pública',
+      'Salud y asistencia social': 'Salud', 'Alojamiento y comidas': 'Alojamiento y comidas' };
+    var VAR = { empleo: { nombre: 'Empleo', total: 'Total de ocupados', unidad: 'ocupados' }, ingreso: { nombre: 'Ingreso', total: 'Ingreso de todos', unidad: 'Bs del 1T-2026' } };
+    var MED = { nivel: { ref: 100, pct: false }, crec: { ref: 0, pct: true } };
+    var DOMS = { 'Bolivia': [['Bolivia', 'Bolivia'], ['Urbano', 'Área urbana'], ['Rural', 'Área rural']],
+      'Departamento': [['Santa Cruz', 'Santa Cruz'], ['La Paz', 'La Paz'], ['Cochabamba', 'Cochabamba']] };
+    var MIN_N = 120;   // casos en la ventana de cuatro trimestres para mostrar un panel
+    var estado = { variable: 'empleo', medida: 'nivel', base: '2019', escala: 'propia', dominio: 'Bolivia', idx: null, k: null };
+    var D, T, X, RAMAS, BASES, S = {}, NIV = {}, ORDEN = [], I = [], grafico, geo = [], hoverG = null;
+    var activas = new Set(['tot', '_fija']);
+    PM.imagen = { proporcion: 1 };
+
+    var nom = function (k) { return k === 'tot' ? VAR[estado.variable].total : (CORTO[k] || k); };
+    var med = function () { return MED[estado.medida]; };
+    function fmt(v) { return v == null ? '—' : med().pct ? PM.pct(v, 1, true) : PM.num(v, 1); }
+    function abs(v) { return v == null ? '—' : estado.variable === 'empleo' ? L.miles(v) : L.bs(v); }
+    function lado(v) { return v == null ? TOT : v >= med().ref ? ARRIBA : ABAJO; }
+
+    PM.cargar(['ramas_trimestral.json']).then(function (r) {
+      D = r[0]; T = D.periodos; RAMAS = D.ramas;
+      X = T.map(function (t) { var p = PM.periodo(t); return p.a + (p.t - 1) / 4; });
+      var ultAnio = +T[T.length - 1].slice(0, 4) - (T[T.length - 1].slice(-1) === '4' ? 0 : 1);
+      BASES = ['2017', '2019', String(ultAnio)].filter(function (a) { return T.filter(function (t) { return t.slice(0, 4) === a; }).length === 4; });
+      estado.idx = T.length - 1;
+      PM.botonera(document.getElementById('b-variable'), [['empleo', 'Empleo'], ['ingreso', 'Ingreso real']], estado.variable, function (v) { estado.variable = v; pastillas(); todo(); });
+      PM.botonera(document.getElementById('b-medida'), [['nivel', 'Nivel (base = 100)'], ['crec', 'Crecimiento']], estado.medida, function (v) { estado.medida = v; todo(); });
+      PM.botonera(document.getElementById('b-base'), BASES.map(function (a) { return [a, a]; }), estado.base, function (v) { estado.base = v; todo(); });
+      PM.botonera(document.getElementById('b-escala'), [['propia', 'Por panel'], ['comun', 'Común']], estado.escala, function (v) { estado.escala = v; grafico.redibujar(); });
+      L.selector(document.getElementById('b-dominio'), DOMS, estado.dominio, function (v) { estado.dominio = v; todo(); }, 'Dónde');
+      pastillas(); medidas(); textos(); cifras();
+      var el = document.getElementById('chart'); el.innerHTML = '';
+      grafico = PM.montar(el, opciones);
+      var donde = function (e) {
+        var b = el.getBoundingClientRect(), x = e.clientX - b.left, y = e.clientY - b.top;
+        hoverG = null;
+        geo.forEach(function (g, j) { if (x >= g.x0 && x <= g.x1 && y >= g.y0 && y <= g.y1) hoverG = j; });
+      };
+      el.addEventListener('pointermove', donde, true);
+      el.addEventListener('pointerdown', donde, true);
+      panel(estado.idx, null);
+      PM.alCambiarTema(function () { cifras(); panel(estado.idx, estado.k); });
+      PM.preguntas(document.getElementById('preguntas'), PREGUNTAS);
+      document.getElementById('fuente').innerHTML = L.fuente({}, PM.fecha(T[T.length - 1])) + ' · IPC: INE';
+    }).catch(function (e) { console.error(e); PM.error(document.getElementById('chart')); });
+
+    function pastillas() {
+      PM.pastillas(document.getElementById('pastillas'), [{ k: 'tot', nombre: estado.variable === 'empleo' ? 'Comparar con el total de ocupados' : 'Comparar con el ingreso de todos', color: { claro: C.pizarra, oscuro: C.gris }, forma: 'punteada' }],
+        activas, function () { grafico.redibujar(); });
+    }
+    function todo() { medidas(); textos(); cifras(); grafico.redibujar(); panel(Math.min(estado.idx, T.length - 1), estado.k); }
+
+    // Promedio de cuatro trimestres SEGUIDOS (por fecha, no por posición) con al menos MIN_N casos en la ventana;
+    // el índice contra el promedio del año base y el crecimiento contra los cuatro trimestres anteriores.
+    function medidas() {
+      var G = D.datos[estado.dominio], v = estado.variable;
+      var ord = T.map(function (t) { var p = PM.periodo(t); return p.a * 4 + p.t; });
+      var seguidos = function (i, n) { return i - n + 1 >= 0 && ord[i] - ord[i - n + 1] === n - 1; };
+      var ib = T.map(function (t, i) { return t.slice(0, 4) === estado.base ? i : -1; }).filter(function (i) { return i >= 0; });
+      var prom = function (s, nn) {
+        return T.map(function (t, i) {
+          if (!seguidos(i, 4)) return null;
+          var w = s.slice(i - 3, i + 1); if (w.some(function (x) { return x == null; })) return null;
+          if (nn) { var c = nn.slice(i - 3, i + 1).reduce(function (a, b) { return a + (b || 0); }, 0); if (c < MIN_N) return null; }
+          return w.reduce(function (a, b) { return a + b; }, 0) / 4;
+        });
+      };
+      S = {}; NIV = {};
+      var series = { tot: { s: G['total_' + v], n: null } };
+      RAMAS.forEach(function (r) { series[r] = { s: G[v][r], n: G['n_' + v][r] }; });
+      Object.keys(series).forEach(function (k) {
+        var p = prom(series[k].s, series[k].n); NIV[k] = p;
+        // base: el promedio de los cuatro trimestres del año base (el promedio móvil que cierra en su T4)
+        var b = ib.length === 4 ? p[ib[3]] : null;
+        S[k] = T.map(function (t, i) {
+          if (p[i] == null) return null;
+          if (estado.medida === 'nivel') return b ? p[i] / b * 100 : null;
+          return seguidos(i, 8) && p[i - 4] ? (p[i] / p[i - 4] - 1) * 100 : null;
+        });
+      });
+      var n = T.length - 1, ult = function (k) { var i = n; while (i >= 0 && S[k][i] == null) i--; return i < 0 ? -Infinity : S[k][i]; };
+      ORDEN = ['tot'].concat(RAMAS.slice().sort(function (a, b) { return ult(b) - ult(a); }));
+    }
+    var primero = function () { var i = 0; while (i < T.length && S.tot[i] == null) i++; return i; };
+
+    function textos() {
+      document.getElementById('it-base').style.display = estado.medida === 'nivel' ? '' : 'none';
+      var q = estado.variable === 'empleo' ? 'Ocupados de cada actividad' : 'Ingreso laboral mediano real de cada actividad';
+      document.getElementById('sub').textContent = estado.medida === 'nivel'
+        ? q + ' (promedio de cuatro trimestres) frente al de ' + estado.base + ' (= 100), en ' + nomDom() + ': sobre la raya punteada, ' + (estado.variable === 'empleo' ? 'emplea a más gente' : 'se gana más') + ' que ese año. Ordenadas de mayor a menor.'
+        : q + ': crecimiento de los últimos cuatro trimestres frente a los cuatro anteriores (%), en ' + nomDom() + '. Ordenadas de mayor a menor.';
+    }
+    function nomDom() { return { Urbano: 'el área urbana', Rural: 'el área rural' }[estado.dominio] || estado.dominio; }
+
+    function cifras() {
+      var n = T.length - 1; while (n > 0 && S.tot[n] == null) n--;
+      var m = med(), tot = S.tot[n], nivel = estado.medida === 'nivel';
+      var fil = RAMAS.map(function (k) { return { k: k, v: S[k][n] }; }).filter(function (x) { return x.v != null; }).sort(function (a, b) { return b.v - a.v; });
+      if (!fil.length) { document.getElementById('kpis').innerHTML = ''; return; }
+      var alto = fil[0], bajo = fil[fil.length - 1], debajo = fil.filter(function (x) { return x.v < m.ref; }).length;
+      var p0 = primero(), serie = function (f) { var out = []; for (var i = Math.max(p0, n - 11); i <= n; i++) out.push(f(i)); return out; };
+      var verbo = estado.variable === 'empleo' ? 'emplean menos' : 'pagan menos';
+      document.getElementById('kpis').innerHTML =
+        PM.kpi({ color: TOT, rotulo: nom('tot') + ' · ' + PM.fecha(T[n]), valor: nivel ? fmt(tot) : fmt(tot),
+          delta: nivel ? PM.pct(tot - 100, 1, true) + ' frente a ' + estado.base + ' · ' + abs(NIV.tot[n]) : 'cuatro trimestres · ' + abs(NIV.tot[n]), tono: tot < m.ref ? 'malo' : 'bueno', serie: serie(function (i) { return S.tot[i]; }) }) +
+        PM.kpi({ color: C.rojo, rotulo: nivel ? 'Actividades que ' + verbo + ' que en ' + estado.base : 'Actividades en caída', valor: debajo + ' de ' + fil.length,
+          delta: (fil.length - debajo) + (nivel ? ' lo superan' : ' crecen'), tono: debajo > fil.length / 2 ? 'malo' : 'neutro',
+          serie: serie(function (i) { return RAMAS.filter(function (k) { return S[k][i] != null && S[k][i] < m.ref; }).length; }) }) +
+        PM.kpi({ color: lado(alto.v), rotulo: (nivel ? 'Más arriba · ' : 'Mayor alza · ') + nom(alto.k), valor: fmt(alto.v), delta: abs(NIV[alto.k][n]), tono: alto.v >= m.ref ? 'bueno' : 'malo', serie: serie(function (i) { return S[alto.k][i]; }) }) +
+        PM.kpi({ color: lado(bajo.v), rotulo: (nivel ? 'Más abajo · ' : 'Mayor caída · ') + nom(bajo.k), valor: fmt(bajo.v), delta: abs(NIV[bajo.k][n]), tono: bajo.v < m.ref ? 'malo' : 'bueno', serie: serie(function (i) { return S[bajo.k][i]; }) });
+    }
+
+    function escala(vals, base, aire, divs) {
+      var v = vals.filter(function (x) { return x != null; });
+      if (!v.length) v = [base];
+      var lo = Math.min.apply(null, v.concat([base])), hi = Math.max.apply(null, v.concat([base])), r = (hi - lo) || 1;
+      lo -= r * aire; hi += r * aire;
+      var paso = Math.pow(10, Math.floor(Math.log10((hi - lo) / divs)));
+      [1, 2, 2.5, 5, 10].some(function (m) { if ((hi - lo) / (paso * m) <= divs) { paso *= m; return true; } return false; });
+      return { lo: Math.floor(lo / paso + 1e-9) * paso, hi: Math.ceil(hi / paso - 1e-9) * paso, paso: paso };
+    }
+    // Corta por el signo respecto de la base e inserta el cruce interpolado; respeta los huecos (2020 sin área rural)
+    function cortar(pts, base) {
+      var aug = [];
+      for (var i = 0; i < pts.length; i++) {
+        aug.push(pts[i]);
+        if (i < pts.length - 1 && pts[i][1] != null && pts[i + 1][1] != null) {
+          var y0 = pts[i][1], y1 = pts[i + 1][1];
+          if ((y0 - base) * (y1 - base) < 0) { var t = (base - y0) / (y1 - y0); aug.push([pts[i][0] + t * (pts[i + 1][0] - pts[i][0]), base]); }
+        }
+      }
+      var f = function (g) { return aug.map(function (p) { return [p[0], p[1] == null ? null : g(p[1], base)]; }); };
+      return { arriba: f(Math.max), abajo: f(Math.min) };
+    }
+    var medidor;
+    function ancho(t, fuente) { medidor = medidor || document.createElement('canvas').getContext('2d'); medidor.font = fuente; return medidor.measureText(t).width; }
+
+    function opciones() {
+      var el = document.getElementById('chart'), ch = echarts.getInstanceByDom(el);
+      var exp = el.style.left === '-40000px', chico = PM.pequeno(), dk = PM.dk(), m = med(), ref = m.ref;
+      var W = el.clientWidth, cols = exp || W >= 900 ? 4 : W >= 470 ? 3 : 2;
+      var n = ORDEN.length, filas = Math.ceil(n / cols);
+      var fN = chico ? 11 : 11.5, fC = chico ? 16 : 18, CAB = Math.round(fN + 4 + fC + 15);
+      var EJE = 18, SEPY = chico ? 14 : 16, SEPX = chico ? 14 : 18, izq = chico ? 10 : 2, der = chico ? 12 : 8, alto;
+      if (exp) alto = Math.floor((el.clientHeight - filas * (CAB + EJE) - (filas - 1) * SEPY) / filas);
+      else {
+        alto = cols === 2 ? 92 : cols === 3 ? 100 : 96;
+        var H = filas * (CAB + alto + EJE) + (filas - 1) * SEPY;
+        if (Math.abs(el.clientHeight - H) > 1) el.style.height = H + 'px';
+        if (ch && Math.abs(ch.getHeight() - el.clientHeight) > 1) ch.resize();
+      }
+      var p0 = primero(), u = T.length - 1;
+      I = []; for (var i = p0; i <= u; i++) I.push(i);
+      var conTot = activas.has('tot');
+      var pts = {};
+      ORDEN.forEach(function (k) { pts[k] = I.map(function (i) { return [X[i], S[k][i]]; }); });
+      var vals = function (k) { return pts[k].map(function (p) { return p[1]; }).filter(function (v) { return v != null; }); };
+      var todos = []; ORDEN.forEach(function (k) { todos = todos.concat(vals(k)); });
+      var comun = escala(todos, ref, 0.05, 5);
+      var esc = ORDEN.map(function (k) {
+        if (estado.escala === 'comun') return comun;
+        var v = vals(k); if (conTot && k !== 'tot') v = v.concat(vals('tot'));
+        return escala(v, ref, 0.12, 3);
+      });
+      var fA = chico ? 9.5 : 10, fuenteEje = '500 ' + fA + 'px ' + PM.mono(), MARG = 6, gut = 0;
+      var dec = function (s) { return Math.abs(s.paso - Math.round(s.paso)) > 1e-9 ? 1 : 0; };
+      esc.forEach(function (s) { for (var v = s.lo; v <= s.hi + s.paso / 2; v += s.paso) gut = Math.max(gut, ancho(PM.num(v, dec(s)), fuenteEje)); });
+      gut = Math.ceil(gut) + MARG;
+      var cw = (W - izq - der - (cols - 1) * SEPX) / cols, plotW = cw - gut;
+      var x0a = X[p0], x1a = X[u], span = Math.floor(x1a) - Math.ceil(x0a), caben = Math.max(2, Math.floor(plotW / 38));
+      var paso = [1, 2, 3, 4, 5].filter(function (t) { return Math.floor(span / t) + 1 <= caben; })[0] || 5;
+      var pz = dk ? '#8A9699' : '#5C6B70', tinta = PM.col(C.tinta), card = PM.var('--card') || '#ffffff';
+      var grilla = dk ? '#2A3A50' : '#E2DDD3', lineaEje = dk ? '#3A4549' : '#C9CDCE';
+      var fNom = '700 ' + fN + 'px ' + PM.inter(), fCif = '700 ' + fC + 'px ' + PM.mono();
+      geo = [];
+      var grid = [], xAxis = [], yAxis = [], series = [], graphic = [];
+      ORDEN.forEach(function (k, g) {
+        var r = Math.floor(g / cols), c = g % cols, x0 = izq + c * (cw + SEPX), y0 = r * (CAB + alto + EJE + SEPY);
+        geo.push({ k: k, x0: x0, x1: x0 + cw, y0: y0, y1: y0 + CAB + alto + EJE });
+        grid.push({ left: Math.round(x0 + gut), top: y0 + CAB, width: Math.floor(plotW), height: alto, containLabel: false });
+        xAxis.push({ type: 'value', gridIndex: g, min: x0a, max: x1a, interval: 0.25,
+          axisLine: { onZero: false, lineStyle: { color: lineaEje } }, axisTick: { show: false }, splitLine: { show: false },
+          axisLabel: { fontFamily: PM.mono(), fontSize: fA, fontWeight: 600, color: dk ? 'rgba(226,232,240,.75)' : 'rgba(0,18,25,.7)', margin: 6,
+            showMinLabel: false, showMaxLabel: false,
+            formatter: function (v) { var y = Math.round(v); return Math.abs(v - y) < 1e-6 && y % paso === 0 ? String(y) : ''; } },
+          axisPointer: { show: true, type: 'line', snap: true, label: { show: false }, lineStyle: { color: dk ? 'rgba(226,232,240,.32)' : 'rgba(0,18,25,.22)', width: 1 } } });
+        var s = esc[g], d = dec(s);
+        yAxis.push({ type: 'value', gridIndex: g, min: s.lo, max: s.hi, interval: s.paso,
+          axisLine: { show: false }, axisTick: { show: false },
+          splitLine: { lineStyle: { color: grilla, type: [3, 3], opacity: dk ? 0.7 : 1 } },
+          axisLabel: { color: pz, fontFamily: PM.mono(), fontSize: fA, fontWeight: 500, margin: MARG, align: 'right', formatter: function (v) { return PM.num(v, d); } } });
+        var dat = pts[k], hay = dat.some(function (p) { return p[1] != null; });
+        var nomK = nom(k); if (ancho(nomK, fNom) > cw) nomK = nomK.split(',')[0];
+        graphic.push({ type: 'text', silent: true, x: x0, y: y0, style: { text: nomK, font: fNom, fill: tinta, align: 'left', verticalAlign: 'top' } });
+        if (!hay) {
+          graphic.push({ type: 'text', silent: true, x: x0, y: y0 + fN + 6, style: { text: 'pocos casos', font: '500 ' + (fC - 6) + 'px ' + PM.inter(), fill: pz, align: 'left', verticalAlign: 'top' } });
+          series.push({ type: 'line', id: 'l' + g, name: nom(k), xAxisIndex: g, yAxisIndex: g, data: [], silent: true });
+          return;
+        }
+        var cut = cortar(dat, ref);
+        var area = function (datos, arriba, id) {
+          return { type: 'line', id: id + g, xAxisIndex: g, yAxisIndex: g, data: datos, silent: true, symbol: 'none', z: 1, connectNulls: false,
+            lineStyle: { width: 0 }, areaStyle: { origin: ref, color: PM.tinte(arriba), opacity: 1 }, tooltip: { show: false }, emphasis: { disabled: true } };
+        };
+        series.push(area(cut.arriba, true, 'arr'), area(cut.abajo, false, 'aba'));
+        if (conTot && k !== 'tot') series.push({ type: 'line', id: 'tot' + g, name: '_tot' + g, xAxisIndex: g, yAxisIndex: g, data: pts.tot, silent: true, z: 2, connectNulls: false,
+          symbol: 'none', lineStyle: { width: 1, color: pz, type: [5, 4] }, tooltip: { show: false }, emphasis: { disabled: true } });
+        var ult = dat.length - 1; while (ult > 0 && dat[ult][1] == null) ult--;
+        series.push({ type: 'line', id: 'l' + g, name: nom(k), xAxisIndex: g, yAxisIndex: g, z: 4, connectNulls: false,
+          data: dat.map(function (p, j) {
+            var cierre = (p[1] != null && Math.abs(p[0] % 1 - 0.75) < 1e-6) || j === ult;
+            return cierre ? { value: p, symbol: 'circle', symbolSize: j === ult ? 7 : 5 } : { value: p, symbol: 'none' };
+          }),
+          showSymbol: true, symbol: 'none', lineStyle: { width: 1.5, color: tinta, cap: 'round', join: 'round' },
+          itemStyle: { color: card, borderColor: tinta, borderWidth: 1.25 }, emphasis: { disabled: true },
+          markLine: { silent: true, symbol: 'none', animation: false, label: { show: false },
+            lineStyle: { color: dk ? 'rgba(226,232,240,.7)' : 'rgba(0,18,25,.65)', width: 0.9, type: [4, 3] }, data: [{ yAxis: ref }] } });
+        var v = dat[ult][1];
+        graphic.push({ type: 'text', silent: true, x: x0, y: y0 + fN + 4, style: { text: fmt(v), font: fCif, fill: PM.col(lado(v)), align: 'left', verticalAlign: 'top' } });
+      });
+      return {
+        animationDuration: 450,
+        grid: grid, xAxis: xAxis, yAxis: yAxis, series: series, graphic: graphic,
+        axisPointer: { link: [{ xAxisIndex: 'all' }] },
+        tooltip: PM.tooltip(function (ps) {
+          var g = hoverG != null ? hoverG : 0, k = ORDEN[g];
+          var p = ps.filter(function (q) { return q.seriesId === 'l' + g; })[0] || ps.filter(function (q) { return /^l\d+$/.test(q.seriesId); })[0];
+          if (!p) return '';
+          var i = I[0] + Math.round((p.value[0] - X[I[0]]) * 4), v = S[k][i], tv = S.tot[i];
+          if (v == null) return '';
+          panel(i, k);
+          var h = PM.ttTitulo(nom(k) + ' · ' + PM.fecha(T[i]), nomDom() + (estado.medida === 'nivel' ? ' · cuatro trimestres · ' + estado.base + ' = 100' : ' · crecimiento de 4 trimestres'));
+          h += PM.ttFila(TOT, nom(k), fmt(v), 'linea');
+          if (k !== 'tot' && tv != null) h += PM.ttFila(pz, nom('tot'), fmt(tv), 'punteada');
+          return h + PM.ttTotal(estado.variable === 'empleo' ? 'Ocupados (promedio)' : 'Ingreso mediano', abs(NIV[k][i]));
+        }, chico ? {
+          axisPointer: { type: 'line' },
+          position: function (pt, params, dom, rect, size) {
+            var w = size.contentSize[0], h = size.contentSize[1], Wv = size.viewSize[0], g = geo[hoverG != null ? hoverG : 0];
+            var y = g.y0 - h - 6 >= 0 ? g.y0 - h - 6 : g.y1 + 6;
+            return [Math.min(Math.max(pt[0] - w / 2, 4), Math.max(4, Wv - w - 4)), y];
+          }
+        } : { axisPointer: { type: 'line' } })
+      };
+    }
+
+    function lectura(i) {
+      var m = med(), fil = RAMAS.map(function (k) { return { k: k, v: S[k][i] }; }).filter(function (x) { return x.v != null; }).sort(function (a, b) { return b.v - a.v; });
+      if (!fil.length) return '';
+      var n = fil.length, bajo = fil.filter(function (x) { return x.v < m.ref; }).length, tot = S.tot[i], a = fil[0], z = fil[n - 1];
+      var emp = estado.variable === 'empleo', d = tot - m.ref;
+      if (estado.medida === 'nivel') {
+        var t = 'En los cuatro trimestres hasta el ' + PM.fecha(T[i]) + ', ' + (emp ? 'el número de ocupados' : 'el ingreso mediano real') + ' en ' + nomDom() + ' está <strong>' +
+          PM.pct(Math.abs(d), 1) + (d >= 0 ? ' arriba' : ' abajo') + '</strong> de ' + estado.base + ' (' + abs(NIV.tot[i]) + '). ';
+        t += bajo === 0 ? 'Todas las actividades ' + (emp ? 'emplean a más gente' : 'pagan más') + ' que en ' + estado.base + '.'
+          : '<strong>' + bajo + ' de ' + n + '</strong> actividades ' + (emp ? 'emplean a menos gente' : 'pagan menos') + ' que en ' + estado.base + '.';
+        return t + ' La más arriba: <strong>' + nom(a.k) + '</strong> (' + fmt(a.v) + '); la más abajo: <strong>' + nom(z.k) + '</strong> (' + fmt(z.v) + ').';
+      }
+      return (bajo === 0 ? '<strong>Todas crecen</strong>' : bajo === n ? '<strong>Todas caen</strong>' : '<strong>' + (n - bajo) + ' de ' + n + '</strong> actividades crecen y ' + bajo + ' caen') +
+        ' en ' + (emp ? 'empleo' : 'ingreso real') + ' en los últimos cuatro trimestres. Total: <strong>' + fmt(tot) + '</strong>. Entre ' + nom(a.k) + ' (' + fmt(a.v) + ') y ' + nom(z.k) + ' (' + fmt(z.v) + ').';
+    }
+
+    function panel(i, k) {
+      if (i == null || !D || S.tot[i] == null) { var j = T.length - 1; while (j > 0 && S.tot && S.tot[j] == null) j--; if (i !== j && S.tot && S.tot[j] != null) return panel(j, k); return; }
+      estado.idx = i; estado.k = k && k !== 'tot' ? k : null;
+      var ref = med().ref;
+      var fil = RAMAS.map(function (s) { return { k: s, v: S[s][i] }; }).filter(function (x) { return x.v != null; }).sort(function (a, b) { return b.v - a.v; });
+      var filas = [{ k: 'tot', v: S.tot[i] }].concat(fil);
+      var tope = Math.max.apply(null, filas.map(function (x) { return Math.abs(x.v - ref); })) || 1;
+      var titulo = (estado.variable === 'empleo' ? 'Empleo' : 'Ingreso real') + ' · ' + (estado.medida === 'nivel' ? estado.base + ' = 100' : 'crecimiento de 4 trimestres');
+      var html = '<div class="rk"><div class="rk-t">' + titulo + '</div>' + filas.map(function (x) {
+        var dv = x.v - ref, w = Math.abs(dv) / tope * 50, col = PM.col(lado(x.v));
+        var barra = '<i style="background:' + (x.k === 'tot' ? PM.col(TOT) : col) + ';' + (dv >= 0 ? 'left:50%' : 'left:' + (50 - w) + '%') + ';width:' + w + '%"></i>';
+        return '<div class="rk-f' + (x.k === 'tot' ? ' tot' : '') + (x.k === estado.k ? ' sel' : '') + '"><span class="rk-n">' + nom(x.k) +
+          '</span><span class="rk-b">' + barra + '</span><span class="rk-v" style="color:' + (x.k === 'tot' ? PM.col(TOT) : PM.tx(lado(x.v))) + '">' + fmt(x.v) + '</span></div>';
+      }).join('') + '</div>';
+      document.getElementById('panel-fecha').textContent = PM.fecha(T[i]) + ' · ' + estado.dominio;
+      document.getElementById('panel').innerHTML = html + PM.ctx(lectura(i));
+    }
+
+    PM.leyendaImagen = function () {
+      var b = estado.medida === 'nivel' ? estado.base : null;
+      return [{ name: b ? 'Sobre ' + b : 'Crece', color: PM.tinte(true), forma: 'area' }, { name: b ? 'Bajo ' + b : 'Cae', color: PM.tinte(false), forma: 'area' }]
+        .concat(activas.has('tot') ? [{ name: nom('tot'), color: PM.dk() ? '#8A9699' : '#5C6B70', forma: 'punteada' }] : []);
+    };
+    PM.tablaDatos = function () {
+      var u = (estado.variable === 'empleo' ? 'ocupados' : 'ingreso mediano real') + ', ' + (estado.medida === 'nivel' ? 'promedio de 4 trimestres, ' + estado.base + ' = 100' : 'crecimiento de 4 trimestres, %') + ', ' + estado.dominio;
+      return { cols: ['Período (' + u + ')'].concat(ORDEN.map(function (k) { return k === 'tot' ? nom('tot') : k; })),
+        filas: I.map(function (i) { return [T[i]].concat(ORDEN.map(function (k) { return S[k][i] == null ? null : +S[k][i].toFixed(3); })); }) };
+    };
+
+    var PREGUNTAS = [
+      ['¿Cómo se lee?', 'Cada panel es una actividad, con el <strong>total primero</strong>. La línea es la actividad; el relleno <strong>turquesa</strong> marca cuándo está sobre la base (100, o el cero en el crecimiento) y el <strong>rojo</strong> cuándo está debajo. La raya gris punteada repite el total. La cifra grande es el último dato, y los paneles van ordenados por ella. El cursor sobre un trimestre lo marca en todos los paneles, y la lectura de la derecha los ordena para ese trimestre.'],
+      ['¿Por qué el promedio de cuatro trimestres?', 'El empleo de cada actividad tiene estación (la cosecha, las fiestas de fin de año) y, en las actividades chicas, un error de muestreo alto en un solo trimestre. El promedio de los últimos cuatro trimestres quita la estación y reduce el error a la mitad. En el cuarto trimestre de cada año es el promedio del año (el punto hueco).'],
+      ['¿Qué es el ingreso de cada actividad?', 'La mediana del ingreso mensual de la ocupación principal de quienes trabajan en esa actividad, en bolivianos del 1.er trimestre de 2026 (con el IPC del INE). En las actividades donde casi todos son asalariados (educación, salud, administración pública) se acerca al salario; en el comercio o el agro, a la ganancia de un negocio por cuenta propia. El índice promedia las medianas de cuatro trimestres.'],
+      ['¿Qué año base conviene?', '<strong>2019</strong>: el último año antes de la pandemia. <strong>2017</strong>: un año de la serie larga antes de la desaceleración. <strong>' + (BASES ? BASES[BASES.length - 1] : '2025') + '</strong>: el último año completo, para ver el cambio más reciente.'],
+      ['¿Qué quiere decir «pocos casos»?', 'Para mostrar un panel, la ventana de cuatro trimestres tiene que sumar al menos ' + MIN_N + ' personas encuestadas en esa actividad. En los departamentos, las actividades chicas (minería, electricidad) suelen no llegar. En el área rural y en los totales departamentales falta 2020: la encuesta no se levantó en el campo de abril a diciembre.']
+    ];
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light" style="--acento:#A86E00">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ingresos laborales · Populi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="comun/monitor.css" />
+  <link rel="stylesheet" href="laboral.css" />
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <script src="comun/monitor.js"></script>
+  <script src="laboral.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="sec-hd">
+      <div class="sec-title"><span class="accent-bar"></span>Ingresos laborales</div>
+      <div class="sec-sub" id="sub">Ingreso mensual de la ocupación principal, mediana en bolivianos del 1.er trimestre de 2026 (descontada la inflación)</div>
+    </div>
+
+    <div class="hz-bar">
+      <div class="hz-item"><span class="hz-lbl">Medida</span><div class="hz-grp" id="b-medida"></div></div>
+      <div class="hz-item" id="it-comparar"><span class="hz-lbl">Comparar</span><div class="hz-grp" id="b-comparar"></div></div>
+      <div class="hz-item"><span class="hz-lbl">Ámbito</span><div class="hz-grp" id="b-ambito"></div></div>
+      <div class="hz-item"><span class="hz-lbl">Rango</span><div class="hz-grp" id="b-rango"></div></div>
+    </div>
+
+    <div class="kpi-grid" id="kpis"></div>
+
+    <div class="main-grid">
+      <div class="chart-card">
+        <div class="chart-ctrl"><div class="tog-grp" id="pastillas"></div></div>
+        <div class="grafico" id="chart"><div class="loading"><div class="spinner"></div><span>Cargando los ingresos…</span></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-hd"><span class="panel-hd-t">Lectura del indicador</span><span class="panel-hd-d" id="panel-fecha"></span></div>
+        <div class="panel-body" id="panel"></div>
+      </div>
+    </div>
+
+    <div class="edu-grid" id="preguntas"></div>
+    <div class="source"><span class="source-txt" id="fuente"></span></div>
+  </div>
+
+  <script>
+  (function () {
+    var C = PM.C;
+    var SUB = { ingreso: 'Ingreso mensual de la ocupación principal, mediana en bolivianos del 1.er trimestre de 2026 (descontada la inflación)',
+      minimo: 'Porcentaje de los ocupados con ingreso que gana menos que el salario mínimo nacional de cada año' };
+    var GRUPOS = {
+      total: [{ k: 'ylab_med', nombre: 'Ingreso mediano', largo: 'Ingreso mediano', color: C.oro, ancho: 2.5 }],
+      sexo: [{ k: 'ylab_med_hombres', nombre: 'Hombres', largo: 'Hombres (mediana)', color: { claro: C.petroleo, oscuro: C.menta }, ancho: 2 },
+        { k: 'ylab_med_mujeres', nombre: 'Mujeres', largo: 'Mujeres (mediana)', color: C.rojo, ancho: 2 }],
+      formalidad: [{ k: 'ylab_med_formal', nombre: 'Empleo formal', largo: 'Empleo formal (mediana)', color: C.turquesa, ancho: 2 },
+        { k: 'ylab_med_informal', nombre: 'Empleo informal', largo: 'Empleo informal (mediana)', color: C.rojo, ancho: 2 }],
+      categoria: [{ k: 'ylab_med_asal', nombre: 'Asalariados', largo: 'Obreros y empleados (mediana)', color: C.turquesa, ancho: 2 },
+        { k: 'ylab_med_cp', nombre: 'Cuenta propia', largo: 'Cuenta propia (mediana)', color: C.oro, ancho: 2 }],
+      minimo: [{ k: 'bajo_smn', nombre: 'Ocupados bajo el mínimo', largo: 'Ocupados con ingreso menor al salario mínimo', color: C.rojo, ancho: 2.5 },
+        { k: 'asal_bajo_smn', nombre: 'Asalariados bajo el mínimo', largo: 'Asalariados con ingreso menor al salario mínimo', color: C.oro, ancho: 2 }]
+    };
+    var estado = { medida: 'ingreso', comparar: 'total', ambito: 'Bolivia', rango: 'todo', idx: null };
+    var activas = {};
+    Object.keys(GRUPOS).forEach(function (g) { activas[g] = new Set(GRUPOS[g].map(function (s) { return s.k; })); });
+    var D, M, K, si = 0, grafico;
+    var S = function (k) { return D.dominios[estado.ambito][k].slice(0, K.length); };
+    var grupo = function () { return estado.medida === 'minimo' ? 'minimo' : estado.comparar; };
+    var cambio = function (a, b) { return a != null && b ? 100 * (a / b - 1) : null; };
+
+    PM.cargar(['trimestral.json']).then(function (r) {
+      D = r[0]; M = D.metadata;
+      K = D.periodos.slice(0, D.periodos.indexOf(M.ultimo_microdato) + 1);   // los ingresos llegan sólo con el microdato
+      estado.idx = K.length - 1;
+      PM.botonera(document.getElementById('b-medida'), [['ingreso', 'Ingreso real'], ['minimo', 'Bajo el mínimo']], estado.medida, function (v) {
+        estado.medida = v; document.getElementById('sub').textContent = SUB[v];
+        document.getElementById('it-comparar').style.display = v === 'minimo' ? 'none' : ''; pastillas(); grafico.redibujar(); panel(estado.idx); });
+      PM.botonera(document.getElementById('b-comparar'), [['total', 'Total'], ['sexo', 'Sexo'], ['formalidad', 'Formalidad'], ['categoria', 'Categoría']], estado.comparar,
+        function (v) { estado.comparar = v; pastillas(); grafico.redibujar(); panel(estado.idx); });
+      L.selector(document.getElementById('b-ambito'), L.AMBITOS_SEL, estado.ambito, function (v) { estado.ambito = v; cifras(); grafico.redibujar(); panel(estado.idx); }, 'Ámbito');
+      PM.botonera(document.getElementById('b-rango'), L.RANGOS, estado.rango, function (v) { estado.rango = v; grafico.redibujar(); });
+      pastillas(); cifras();
+      var el = document.getElementById('chart'); el.innerHTML = '';
+      grafico = PM.montar(el, opciones);
+      grafico.chart.on('click', function (p) { if (p.dataIndex != null) panel(si + p.dataIndex); });
+      panel(estado.idx);
+      PM.alCambiarTema(function () { cifras(); panel(estado.idx); });
+      PM.preguntas(document.getElementById('preguntas'), PREGUNTAS);
+      document.getElementById('fuente').innerHTML = L.fuente({}, PM.fecha(M.ultimo_microdato)) + ' · IPC: INE' + L.notaEst(D).replace('para Bolivia y el área rural', 'del ingreso rural');
+    }).catch(function (e) { console.error(e); PM.error(document.getElementById('chart')); });
+
+    function pastillas() {
+      PM.pastillas(document.getElementById('pastillas'), GRUPOS[grupo()].map(function (s) { return { k: s.k, nombre: s.nombre, color: s.color, forma: 'linea' }; }),
+        activas[grupo()], function () { grafico.redibujar(); });
+    }
+
+    function cifras() {
+      var y = S('ylab_med'), u = L.ultimo(y), a = L.haceUnAnio(K, u), yh = S('yhora_med');
+      var d = a >= 0 ? cambio(y[u], y[a]) : null, dh = a >= 0 ? cambio(yh[u], yh[a]) : null;
+      var tono = function (x) { return x == null || Math.abs(x) < 0.5 ? 'neutro' : x > 0 ? 'bueno' : 'malo'; };
+      var h = S('ylab_med_hombres')[u], m = S('ylab_med_mujeres')[u];
+      var b = S('bajo_smn'), db = a >= 0 && b[a] != null ? b[u] - b[a] : null;
+      document.getElementById('kpis').innerHTML =
+        PM.kpi({ color: C.oro, rotulo: 'Ingreso mediano · ' + PM.fecha(K[u]), valor: L.bs(y[u]), delta: d == null ? '' : PM.flecha(d, 0.5) + ' ' + PM.pct(d, 1, true) + ' real en un año', tono: tono(d),
+          serie: PM.ultimos(y.filter(function (v) { return v != null; }), 16) }) +
+        PM.kpi({ color: C.turquesa, rotulo: 'Ingreso por hora', valor: yh[u] == null ? '—' : 'Bs ' + PM.num(yh[u], 1), delta: dh == null ? '' : PM.flecha(dh, 0.5) + ' ' + PM.pct(dh, 1, true) + ' real en un año', tono: tono(dh),
+          serie: PM.ultimos(yh.filter(function (v) { return v != null; }), 16) }) +
+        PM.kpi({ color: C.rojo, rotulo: 'Mujeres / hombres', valor: h && m ? PM.pct(100 * m / h, 0) : '—', delta: 'ingreso mediano de las mujeres sobre el de los hombres', tono: 'neutro',
+          serie: PM.ultimos(S('ylab_med_mujeres').map(function (v, i) { var hh = S('ylab_med_hombres')[i]; return v && hh ? 100 * v / hh : null; }).filter(function (v) { return v != null; }), 16) }) +
+        PM.kpi({ color: C.granate, rotulo: 'Bajo el salario mínimo', valor: PM.pct(b[u], 1), delta: db == null ? '' : PM.flecha(db, 0.05) + ' ' + PM.pp(db) + ' en un año',
+          tono: db == null || Math.abs(db) < 0.05 ? 'neutro' : db < 0 ? 'bueno' : 'malo', serie: PM.ultimos(b.filter(function (v) { return v != null; }), 16) });
+    }
+
+    function opciones() {
+      si = PM.desde(K, estado.rango);
+      var KV = K.slice(si), el = document.getElementById('chart'), pct = grupo() === 'minimo';
+      var series = GRUPOS[grupo()].filter(function (s) { return activas[grupo()].has(s.k); }).map(function (s) {
+        var data = S(s.k).slice(si), u = L.ultimo(data);
+        return PM.linea(s.color, { ancho: s.ancho, extra: { name: s.nombre, data: data, connectNulls: false, smooth: true, smoothMonotone: 'x',
+          z: s.ancho > 2 ? 4 : 2, markPoint: u >= 0 ? PM.puntoFinal(s.color, u, data[u]) : undefined } });
+      });
+      // 2T-4T 2020: el ingreso rural es estimación POPULI (punteado + banda); la mediana de Bolivia no se puede armar
+      GRUPOS[grupo()].filter(function (s) { return activas[grupo()].has(s.k); }).forEach(function (s) {
+        series = series.concat(L.tramo(D, estado.ambito, s.k, KV, S(s.k).slice(si), s.color, s.ancho));
+      });
+      return {
+        grid: PM.grid({ top: pct ? 16 : 28 }),
+        xAxis: PM.ejeTiempo(KV, el),
+        yAxis: PM.ejeY(pct ? { fmt: 'pct', extra: { min: 0 } } : { unidad: 'Bs', extra: { scale: true } }),
+        tooltip: PM.tooltip(function (ps) {
+          if (!ps.length) return '';
+          var i = ps[0].dataIndex; panel(si + i);
+          var h = PM.ttTitulo(PM.fecha(KV[i]) + (L.hayEst(D, estado.ambito, KV[i]) ? ' · estimado' : ''), estado.ambito + (pct ? '' : ' · Bs del 1T-2026'));
+          ps.forEach(function (p) {
+            if (p.value == null || /^_/.test(p.seriesName)) return;
+            var c = GRUPOS[grupo()].filter(function (q) { return q.nombre === p.seriesName; })[0];
+            if (c) h += PM.ttFila(c.color, c.nombre, pct ? PM.pct(p.value, 1) : L.bs(p.value), 'linea');
+          });
+          h += L.ttEst(D, estado.ambito, KV[i], GRUPOS[grupo()].filter(function (s) { return activas[grupo()].has(s.k); }).map(function (s) {
+            return { k: s.k, nombre: s.nombre, color: s.color, fmt: pct ? function (v) { return PM.pct(v, 1); } : L.bs }; }));
+          return h;
+        }),
+        series: series
+      };
+    }
+
+    function panel(i) {
+      if (i == null || !D || i < 0) return;
+      estado.idx = i;
+      var k = K[i], esEst = L.est(D, estado.ambito, 'ylab_med', k);
+      var v = function (x) { return L.valor(D, estado.ambito, x, K, i).v; };
+      document.getElementById('panel-fecha').textContent = PM.fecha(k) + (esEst ? ' · estimado' : '');
+      var filas = GRUPOS[grupo()].filter(function (s) { return v(s.k) != null; }).map(function (s) {
+        return PM.pb(s.color, s.largo, grupo() === 'minimo' ? PM.pct(v(s.k), 1) : L.bs(v(s.k)), null); }).join('');
+      var y = v('ylab_med'), txt;
+      if (esEst) txt = 'Entre abril y diciembre de 2020 el INE no levantó la encuesta en el área rural: el ingreso mediano rural de <strong>' + L.bs(y) +
+        '</strong> es una <strong>estimación POPULI</strong> (intervalo de 95 %: ' + L.bs(esEst.li) + ' a ' + L.bs(esEst.ls) + ') con un modelo estructural de series de tiempo. <a href="' + M.estimados.metodologia + '" target="_blank" rel="noopener">Ver metodología</a>.';
+      else if (y == null) txt = 'Sin dato para ' + estado.ambito + ' en este trimestre' + (/2020-T[234]/.test(k) && estado.ambito === 'Bolivia' ? ': sin encuesta rural, y la mediana de Bolivia no se puede armar sumando la urbana y la rural estimada.' : '.');
+      else {
+        var a = L.haceUnAnio(K, i), d = a >= 0 ? cambio(y, S('ylab_med')[a]) : null;
+        var b19 = ['2019-T1', '2019-T2', '2019-T3', '2019-T4'].map(function (q) { return S('ylab_med')[K.indexOf(q)]; }).filter(function (x) { return x != null; });
+        var p19 = b19.length ? b19.reduce(function (s, x) { return s + x; }, 0) / b19.length : null, d19 = cambio(y, p19);
+        txt = 'La mitad de los ocupados de ' + estado.ambito + ' gana menos de <strong>' + L.bs(y) + '</strong> al mes (en bolivianos de hoy).';
+        if (d != null) txt += ' En un año, el ingreso mediano real ' + (Math.abs(d) < 0.5 ? 'casi no cambia' : (d < 0 ? 'cae ' : 'sube ') + PM.pct(Math.abs(d), 1)) + '.';
+        if (d19 != null && K[i] > '2019-T4') txt += ' Frente al promedio de 2019 está <strong>' + PM.pct(Math.abs(d19), 0) + (d19 < 0 ? ' abajo' : ' arriba') + '</strong>.';
+        if (v('bajo_smn') != null) txt += ' <strong>' + PM.pct(v('bajo_smn'), 0) + '</strong> de los ocupados gana menos que el salario mínimo.';
+      }
+      document.getElementById('panel').innerHTML = filas + PM.ctx(txt);
+    }
+
+    var PREGUNTAS = [
+      ['¿Qué ingreso se mide?', 'El ingreso laboral mensual de la <strong>ocupación principal</strong> que calcula el INE (salario líquido más pagos extras para los asalariados; ganancia neta para los independientes), de las personas ocupadas que declaran un ingreso positivo. Los familiares sin remuneración no entran (no tienen ingreso). No se usa el ingreso de la ocupación secundaria: la ECE dejó de preguntarlo después de 2018.'],
+      ['¿Por qué la mediana?', 'La mediana es el ingreso de la persona del medio: la mitad gana menos y la mitad gana más. No la mueven unos pocos ingresos muy altos, como al promedio, y es más estable entre trimestres.'],
+      ['¿Cómo se descuenta la inflación?', 'Cada ingreso se lleva a <strong>bolivianos del 1.er trimestre de 2026</strong> con el Índice de Precios al Consumidor del INE (serie empalmada, base 2016) del mes en que se hizo la entrevista. Así, una caída de la línea es pérdida de poder de compra, aunque el monto nominal suba.'],
+      ['¿Qué es estar bajo el salario mínimo?', 'Ganar menos que el salario mínimo nacional del año (Bs 2.750 en 2025; Bs 3.300 desde enero de 2026, DS 5516). El mínimo rige para los asalariados, pero compararlo con todos los ocupados muestra cuántos ingresos laborales quedan por debajo del piso legal. El salto de 2026 refleja también la suba del mínimo.'],
+      ['¿Por qué no hay datos de los últimos trimestres?', 'Los ingresos sólo se pueden calcular con el microdato de la ECE, que el INE publica con unos meses de rezago. El monitor se actualiza cuando sale cada trimestre.']
+    ];
+  })();
+  </script>
+</body>
+</html>

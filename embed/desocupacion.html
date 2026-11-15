@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light" style="--acento:#C71E1D">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Desocupación y subutilización · Populi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="comun/monitor.css" />
+  <link rel="stylesheet" href="laboral.css" />
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <script src="comun/monitor.js"></script>
+  <script src="laboral.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="sec-hd">
+      <div class="sec-title"><span class="accent-bar"></span>Desocupación y subutilización</div>
+      <div class="sec-sub">Porcentaje de la fuerza de trabajo, por trimestre: quienes buscan empleo y no lo consiguen, y la medida amplia de la OIT</div>
+    </div>
+
+    <div class="hz-bar">
+      <div class="hz-item"><span class="hz-lbl">Ámbito</span><div class="hz-grp" id="b-ambito"></div></div>
+      <div class="hz-item"><span class="hz-lbl">Rango</span><div class="hz-grp" id="b-rango"></div></div>
+    </div>
+
+    <div class="kpi-grid" id="kpis"></div>
+
+    <div class="main-grid">
+      <div class="chart-card">
+        <div class="chart-ctrl"><div class="tog-grp" id="pastillas"></div></div>
+        <div class="grafico" id="chart"><div class="loading"><div class="spinner"></div><span>Cargando la desocupación…</span></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-hd"><span class="panel-hd-t">Lectura del indicador</span><span class="panel-hd-d" id="panel-fecha"></span></div>
+        <div class="panel-body" id="panel"></div>
+      </div>
+    </div>
+
+    <div class="edu-grid" id="preguntas"></div>
+    <div class="source"><span class="source-txt" id="fuente"></span></div>
+  </div>
+
+  <script>
+  (function () {
+    var C = PM.C;
+    var SERIES = [
+      { k: 'td', nombre: 'Desocupación', largo: 'Tasa de desocupación', color: C.rojo, ancho: 2.5, desc: 'Busca trabajo, está disponible y no trabajó ni una hora en la semana' },
+      { k: 'lu4', nombre: 'Subutilización (LU4)', largo: 'Subutilización amplia (LU4)', color: { claro: C.petroleo, oscuro: C.menta }, ancho: 2, desc: 'Desocupados + subocupados por horas + fuerza de trabajo potencial' },
+      { k: 'tsub', nombre: 'Subocupación', largo: 'Subocupación por horas', color: C.oro, ancho: 1.75, desc: 'Ocupados con menos de 40 horas que quieren y pueden trabajar más (% de los ocupados)' },
+      { k: 'lu3', nombre: 'LU3', largo: 'Desocupación + fuerza potencial (LU3)', color: C.turquesa, ancho: 1.75, desc: 'Suma a quienes están disponibles pero no buscan' }
+    ];
+    var estado = { ambito: 'Bolivia', rango: 'todo', idx: null };
+    var activas = new Set(['td', 'lu4', 'tsub']);
+    var D, M, K, si = 0, grafico;
+    var S = function (k) { return D.dominios[estado.ambito][k]; };
+
+    PM.cargar(['trimestral.json']).then(function (r) {
+      D = r[0]; M = D.metadata; K = D.periodos; estado.idx = K.length - 1;
+      L.selector(document.getElementById('b-ambito'), L.AMBITOS_SEL, estado.ambito, function (v) { estado.ambito = v; cifras(); grafico.redibujar(); panel(Math.min(estado.idx, K.length - 1)); }, 'Ámbito');
+      PM.botonera(document.getElementById('b-rango'), L.RANGOS, estado.rango, function (v) { estado.rango = v; grafico.redibujar(); });
+      PM.pastillas(document.getElementById('pastillas'), SERIES.map(function (s) { return { k: s.k, nombre: s.nombre, color: s.color, forma: 'linea' }; }),
+        activas, function () { grafico.redibujar(); });
+      cifras();
+      var el = document.getElementById('chart'); el.innerHTML = '';
+      grafico = PM.montar(el, opciones);
+      grafico.chart.on('click', function (p) { if (p.dataIndex != null) panel(si + p.dataIndex); });
+      panel(estado.idx);
+      PM.alCambiarTema(function () { cifras(); panel(estado.idx); });
+      PM.preguntas(document.getElementById('preguntas'), PREGUNTAS);
+      document.getElementById('fuente').innerHTML = L.fuente(M, L.fechaP(M, M.ultimo_dato)) + L.notaEst(D);
+    }).catch(function (e) { console.error(e); PM.error(document.getElementById('chart')); });
+
+    function cifras() {
+      var tarjeta = function (k, rot, fmt, mejorBaja, color) {
+        var s = S(k), u = L.ultimo(s); if (u < 0) return '';
+        var a = L.haceUnAnio(K, u), d = a >= 0 && s[a] != null ? s[u] - s[a] : null;
+        var tono = d == null || Math.abs(d) < 0.05 ? 'neutro' : (d < 0) === mejorBaja ? 'bueno' : 'malo';
+        return PM.kpi({ color: color, rotulo: rot + ' · ' + L.fechaP(M, K[u]), valor: fmt(s[u]),
+          delta: d == null ? 'sin dato del año anterior' : PM.flecha(d, 0.05) + ' ' + PM.pp(d) + ' en un año', tono: tono,
+          serie: PM.ultimos(s.filter(function (v) { return v != null; }), 16) });
+      };
+      var oc = S('ocupados'), u = L.ultimo(oc), a = L.haceUnAnio(K, u);
+      var dOc = a >= 0 && oc[a] ? oc[u] - oc[a] : null;
+      document.getElementById('kpis').innerHTML =
+        tarjeta('td', 'Desocupación', function (v) { return PM.pct(v, 1); }, true, C.rojo) +
+        tarjeta('lu4', 'Subutilización amplia', function (v) { return PM.pct(v, 1); }, true, SERIES[1].color) +
+        tarjeta('tgp', 'Participación', function (v) { return PM.pct(v, 1); }, false, C.turquesa) +
+        PM.kpi({ color: C.tinta, rotulo: 'Ocupados · ' + PM.fecha(K[u]), valor: L.millones(oc[u]),
+          delta: dOc == null ? '' : (dOc >= 0 ? '+' : '−') + L.miles(Math.abs(dOc)) + ' en un año', tono: 'neutro',
+          serie: PM.ultimos(oc.filter(function (v) { return v != null; }), 16) });
+    }
+
+    function opciones() {
+      si = PM.desde(K, estado.rango);
+      var KV = K.slice(si), el = document.getElementById('chart');
+      var series = SERIES.filter(function (s) { return activas.has(s.k); }).map(function (s) {
+        var data = S(s.k).slice(si), u = L.ultimo(data);
+        return PM.linea(s.color, { ancho: s.ancho, extra: { name: s.nombre, data: data, connectNulls: false, smooth: true, smoothMonotone: 'x',
+          z: s.k === 'td' ? 4 : 2, markPoint: u >= 0 ? PM.puntoFinal(s.color, u, data[u]) : undefined } });
+      });
+      var area = L.areaPrelim(KV, M);
+      if (area && series.length) series[0].markArea = area;
+      // 2T-4T 2020 sin encuesta rural: tramo punteado + banda del intervalo de 95 % (estimación POPULI)
+      SERIES.filter(function (s) { return activas.has(s.k); }).forEach(function (s) {
+        series = series.concat(L.tramo(D, estado.ambito, s.k, KV, S(s.k).slice(si), s.color, s.ancho));
+      });
+      return {
+        grid: PM.grid({ top: 16 }),
+        xAxis: PM.ejeTiempo(KV, el),
+        yAxis: PM.ejeY({ fmt: 'pct', extra: { min: 0 } }),
+        tooltip: PM.tooltip(function (ps) {
+          if (!ps.length) return '';
+          var i = ps[0].dataIndex; panel(si + i);
+          var h = PM.ttTitulo(L.fechaP(M, KV[i]) + (L.hayEst(D, estado.ambito, KV[i]) ? ' · estimado' : ''), estado.ambito);
+          ps.forEach(function (p) {
+            if (p.value == null || /^_/.test(p.seriesName)) return;
+            var c = SERIES.filter(function (q) { return q.nombre === p.seriesName; })[0];
+            if (c) h += PM.ttFila(c.color, c.nombre, PM.pct(p.value, 1), 'linea');
+          });
+          h += L.ttEst(D, estado.ambito, KV[i], SERIES.filter(function (s) { return activas.has(s.k); }).map(function (s) {
+            return { k: s.k, nombre: s.nombre, color: s.color, fmt: function (v) { return PM.pct(v, 1); } }; }));
+          if (L.esPrelim(M, KV[i])) h += PM.ttPie('Preliminar (cuadros del INE): la subutilización amplia sale con el microdato');
+          return h;
+        }),
+        series: series
+      };
+    }
+
+    function panel(i) {
+      if (i == null || !D || i < 0) return;
+      estado.idx = i;
+      var k = K[i], esEst = L.hayEst(D, estado.ambito, k);
+      var v = function (x) { return L.valor(D, estado.ambito, x, K, i).v; };
+      var ic = function (x) { var e = L.est(D, estado.ambito, x, k); return e ? ' Estimación POPULI; intervalo de 95 %: ' + PM.pct(e.li, 1) + '–' + PM.pct(e.ls, 1) + '.' : ''; };
+      document.getElementById('panel-fecha').textContent = L.fechaP(M, k) + (esEst ? ' · estimado' : '');
+      var html = SERIES.filter(function (s) { return v(s.k) != null; }).map(function (s) { return PM.pb(s.color, s.largo, PM.pct(v(s.k), 1), s.desc + (esEst ? '.' + ic(s.k) : '')); }).join('');
+      var td = v('td'), lu4 = v('lu4'), txt;
+      if (esEst && td != null) txt = 'Entre abril y diciembre de 2020 el INE no levantó la encuesta en el área rural. La cifra es una <strong>estimación POPULI</strong> con un modelo estructural de series de tiempo (el que usan las oficinas de estadística para estos casos): desocupación de <strong>' +
+        PM.pct(td, 1) + '</strong> y subutilización amplia de <strong>' + PM.pct(lu4, 1) + '</strong>. <a href="' + M.estimados.metodologia + '" target="_blank" rel="noopener">Ver metodología</a>.';
+      else if (td == null) txt = 'Sin dato para ' + estado.ambito + ' en este trimestre' + (/2020-T[234]/.test(k) ? ': entre abril y diciembre de 2020 la encuesta no se levantó en el área rural.' : '.');
+      else if (lu4 == null) txt = 'La desocupación de <strong>' + PM.pct(td, 1) + '</strong> es un dato preliminar del INE; la medida amplia llega con el microdato del trimestre.';
+      else txt = 'En ' + estado.ambito + ', <strong>' + PM.pct(td, 1) + '</strong> de la fuerza de trabajo buscaba empleo sin conseguirlo. Sumando a quienes trabajan menos horas de las que quieren y a quienes podrían trabajar pero no buscan, la subutilización llega a <strong>' +
+        PM.pct(lu4, 1) + '</strong>: <strong>' + PM.num(lu4 / td, 1) + ' veces</strong> la desocupación abierta.';
+      var a = L.haceUnAnio(K, i);
+      if (!esEst && td != null && a >= 0 && S('td')[a] != null) {
+        var d = td - S('td')[a];
+        txt += ' Frente al mismo trimestre de un año antes, la desocupación ' + (Math.abs(d) < 0.05 ? 'no cambia' : (d < 0 ? 'baja ' : 'sube ') + PM.num(Math.abs(d), 1) + ' pp') + '.';
+      }
+      document.getElementById('panel').innerHTML = html +
+        (v('ocupados') == null ? '' : PM.pb(C.tinta, 'Personas', null, 'Ocupados ' + L.millones(v('ocupados')) + ' · desocupados ' + L.miles(v('desocupados')) + ' · fuerza potencial ' + L.miles(v('fuerza_potencial')))) +
+        PM.ctx(txt);
+    }
+
+    var PREGUNTAS = [
+      ['¿Qué mide la tasa de desocupación?', 'Es el porcentaje de la fuerza de trabajo (personas de 14 años o más que trabajan o buscan trabajo) que <strong>no trabajó ni una hora</strong> en la semana de referencia, <strong>buscó</strong> empleo en las últimas cuatro semanas y estaba <strong>disponible</strong>. Es la definición de la OIT que aplica el INE; aquí se recalcula desde el microdato de la ECE y coincide con la cifra oficial al decimal.'],
+      ['¿Por qué es tan baja en Bolivia?', 'Con más de ocho de cada diez ocupados en la informalidad y sin seguro de desempleo, pocas personas pueden permitirse estar sin trabajar: quien pierde un empleo pasa enseguida a una actividad por cuenta propia, aunque gane menos o trabaje menos horas. Por eso la desocupación abierta dice poco del estado del mercado laboral, y conviene leerla junto con la subutilización, la informalidad y los ingresos.'],
+      ['¿Qué es la subutilización (LU2, LU3, LU4)?', 'Son las medidas de la 19.ª Conferencia de Estadísticos del Trabajo (OIT). <strong>LU3</strong> suma a los desocupados la <strong>fuerza de trabajo potencial</strong>: personas disponibles que no buscan (o que buscan sin estar disponibles). <strong>LU4</strong> suma además a los <strong>subocupados por horas</strong>: trabajan menos de 40 horas, quieren trabajar más y pueden. Ambas se expresan sobre la fuerza de trabajo ampliada (fuerza de trabajo + potencial).'],
+      ['¿Qué significan los trimestres marcados (p)?', 'El microdato de la ECE se publica con unos meses de rezago. Para los trimestres más recientes el monitor usa los <strong>cuadros preliminares del INE</strong> (desocupación, participación, subocupación e informalidad), sombreados en el gráfico. La subutilización amplia, los niveles y los cortes finos aparecen cuando el INE publica el microdato del trimestre.'],
+      ['¿Qué pasó en 2020?', 'Entre abril y diciembre de 2020 la encuesta se levantó por teléfono y sólo en el área urbana, por la cuarentena: el INE no publica el total de Bolivia ni el área rural de esos trimestres. En el gráfico, esos tres trimestres van en <strong>línea punteada</strong> con su intervalo de 95 % en una banda tenue: es una <strong>estimación POPULI</strong>, no un dato del INE. Se hizo con un modelo estructural de señal + ruido, el método que usan el BLS de Estados Unidos y la oficina de estadística de los Países Bajos para sus encuestas de empleo, validado escondiendo trimestres de otros años. El área rural se estima y se combina con el área urbana observada. Los departamentos quedan vacíos. <a href="../metodologia.html#hueco-2020" target="_blank" rel="noopener">Metodología completa</a>.']
+    ];
+  })();
+  </script>
+</body>
+</html>

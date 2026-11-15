@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light" style="--acento:#0A9396">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Empleo por actividad económica · Populi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="comun/monitor.css" />
+  <link rel="stylesheet" href="laboral.css" />
+  <style>
+    #chart { height: 470px; }
+    @media (max-width: 640px) { #chart { height: 560px; } }
+    .ind { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 10px; margin-top: 6px; }
+    .ind-n { font-size: .68rem; line-height: 1.6; color: var(--text); }
+    .ind-v { font: 600 .68rem/1.6 'JetBrains Mono', monospace; text-align: right; white-space: nowrap; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <script src="comun/monitor.js"></script>
+  <script src="laboral.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="sec-hd">
+      <div class="sec-title"><span class="accent-bar"></span>Empleo por actividad económica</div>
+      <div class="sec-sub" id="sub">Las 14 grandes ramas de actividad, por departamento</div>
+    </div>
+
+    <div class="hz-bar">
+      <div class="hz-item"><span class="hz-lbl">Indicador</span><div class="hz-grp" id="b-medida"></div></div>
+      <div class="hz-item"><span class="hz-lbl">Dónde</span><div class="hz-grp" id="b-dominio"></div></div>
+      <div class="hz-item"><span class="hz-lbl">Periodo</span><div class="hz-grp" id="b-periodo"></div></div>
+    </div>
+
+    <div class="kpi-grid" id="kpis"></div>
+
+    <div class="main-grid">
+      <div class="chart-card">
+        <div class="grafico" id="chart"><div class="loading"><div class="spinner"></div><span>Cargando las actividades…</span></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-hd"><span class="panel-hd-t">Lectura del indicador</span><span class="panel-hd-d" id="panel-fecha"></span></div>
+        <div class="panel-body" id="panel"></div>
+      </div>
+    </div>
+
+    <div class="edu-grid" id="preguntas"></div>
+    <div class="source"><span class="source-txt" id="fuente"></span></div>
+  </div>
+
+  <script>
+  (function () {
+    var C = PM.C, NB = ' ';
+    var MED = {
+      pct_ocupados: { nombre: '% del empleo', larga: 'participación en el empleo', color: C.turquesa, fmt: 'pct', desc: 'Porcentaje de los ocupados que trabaja en cada actividad' },
+      informalidad: { nombre: 'Informalidad', larga: 'ocupación informal', color: C.rojo, fmt: 'pct', desc: 'Porcentaje de los ocupados de cada actividad con empleo informal' },
+      ingreso_real_mediana: { nombre: 'Ingreso', larga: 'ingreso mediano', color: C.oro, fmt: 'bs', desc: 'Ingreso mensual mediano de la ocupación principal, en Bs del 1T-2026' },
+      mujeres_pct: { nombre: 'Mujeres', larga: 'participación de las mujeres', color: C.granate, fmt: 'pct', desc: 'Porcentaje de mujeres entre los ocupados de cada actividad' },
+      horas_media: { nombre: 'Horas', larga: 'horas semanales promedio', color: C.petroleo, fmt: 'h', desc: 'Horas trabajadas por semana en la ocupación principal (promedio)' }
+    };
+    var CORTO = { 'Servicios financieros, profesionales y TIC': 'Financieros, profesionales y TIC', 'Transporte y almacenamiento': 'Transporte', 'Electricidad, gas y agua': 'Electricidad, gas y agua', 'Salud y asistencia social': 'Salud' };
+    var DOMS = { 'Bolivia': [['Bolivia', 'Bolivia'], ['Urbano', 'Área urbana'], ['Rural', 'Área rural']],
+      'Departamento': ['Chuquisaca', 'La Paz', 'Cochabamba', 'Oruro', 'Potosí', 'Tarija', 'Santa Cruz', 'Beni', 'Pando'].map(function (d) { return [d, d]; }) };
+    var estado = { medida: 'pct_ocupados', dominio: 'Santa Cruz', per: null, k: null };
+    var D, P, RAMAS, ITEMS = [], grafico;
+    var med = function () { return MED[estado.medida]; };
+    var corto = function (r) { return (PM.pequeno() && CORTO[r]) || r; };
+    var fmt = function (v, m) { m = m || med(); if (v == null) return '—'; return m.fmt === 'bs' ? L.bs(v) : m.fmt === 'h' ? PM.num(v, 1) + NB + 'h' : PM.pct(v, 1); };
+    var val = function (r, k, j, d) { var x = D.datos[d || estado.dominio][k || estado.medida]; x = x && x[j == null ? estado.per : j]; return x ? x[RAMAS.indexOf(r)] : null; };
+    var cal = function (r, k, j) { var x = D.calidad[estado.dominio][k || estado.medida]; x = x && x[j == null ? estado.per : j]; return x ? x[RAMAS.indexOf(r)] : null; };
+    // las medianas no llevan CV: se ocultan con pocos casos sólo por la regla de 30 casos del catálogo (calidad 2)
+    var publicable = function (r, k, j) { return val(r, k, j) != null && cal(r, k, j) !== 2; };
+    var txt = function (r, k, j) { return publicable(r, k, j) ? L.conCalidad(fmt(val(r, k, j), MED[k || estado.medida]), cal(r, k, j)) : '—'; };
+    var etqPer = function (j) { return P[j] === 'AM' ? PM.fecha(D.ventana_am[0]) + '–' + PM.fecha(D.ventana_am[1]) : P[j]; };
+
+    PM.cargar(['sectores.json']).then(function (r) {
+      D = r[0]; P = D.periodos; RAMAS = D.ramas; estado.per = P.length - 1;
+      (PM.pequeno() ? L.selector : PM.botonera)(document.getElementById('b-medida'), Object.keys(MED).map(function (k) { return [k, MED[k].nombre]; }), estado.medida,
+        function (v) { estado.medida = v; todo(); }, 'Indicador');
+      L.selector(document.getElementById('b-dominio'), DOMS, estado.dominio, function (v) { estado.dominio = v; periodos(); todo(); }, 'Dónde');
+      periodos(); cifras(); textos();
+      var el = document.getElementById('chart'); el.innerHTML = '';
+      grafico = PM.montar(el, opciones);
+      panel(ordenadas()[0].r);
+      PM.alCambiarTema(function () { cifras(); panel(estado.k); });
+      PM.preguntas(document.getElementById('preguntas'), PREGUNTAS);
+      document.getElementById('fuente').innerHTML = L.fuente({}, PM.fecha(D.ventana_am[1]));
+    }).catch(function (e) { console.error(e); PM.error(document.getElementById('chart')); });
+
+    function periodos() {
+      var ops = [];
+      for (var j = P.length - 1; j >= 0; j--) if (RAMAS.some(function (r) { return val(r, 'pct_ocupados', j) != null; })) ops.push([String(j), P[j] === 'AM' ? 'Últimos 4 trim.' : P[j]]);
+      if (!ops.some(function (o) { return +o[0] === estado.per; })) estado.per = +ops[0][0];
+      L.selector(document.getElementById('b-periodo'), ops, String(estado.per), function (v) { estado.per = +v; todo(); }, 'Periodo');
+    }
+    function todo() { textos(); cifras(); var o = opciones(); o.animation = true; grafico.chart.setOption(o); PM.programarAlto(); panel(estado.k); }
+    function ordenadas() {
+      return RAMAS.map(function (r) { return { r: r, v: publicable(r) ? val(r) : null }; })
+        .sort(function (a, b) { return a.v == null ? 1 : b.v == null ? -1 : b.v - a.v; });
+    }
+    function textos() { document.getElementById('sub').textContent = med().desc + ' · ' + estado.dominio + ', ' + (P[estado.per] === 'AM' ? 'últimos 4 trimestres (' + etqPer(estado.per) + ')' : 'año ' + P[estado.per]) + '.'; }
+
+    function cifras() {
+      var maxi = function (k, menor) {
+        var xs = RAMAS.filter(function (r) { return publicable(r, k) && (k === 'pct_ocupados' || (val(r, 'pct_ocupados') || 0) >= 5); })
+          .map(function (r) { return { r: r, v: val(r, k) }; }).sort(function (a, b) { return menor ? a.v - b.v : b.v - a.v; });
+        return xs[0];
+      };
+      var a = maxi('pct_ocupados'), b = maxi('informalidad'), c = maxi('informalidad', true), d = maxi('ingreso_real_mediana');
+      var t = function (x, k, col, rot, tono) { return x ? PM.kpi({ color: col, rotulo: rot, valor: fmt(x.v, MED[k]), delta: x.r, tono: tono || 'neutro' }) : ''; };
+      document.getElementById('kpis').innerHTML = t(a, 'pct_ocupados', C.turquesa, 'Más empleo') + t(b, 'informalidad', C.rojo, 'Más informal', 'malo') +
+        t(c, 'informalidad', { claro: C.petroleo, oscuro: C.menta }, 'Menos informal', 'bueno') + t(d, 'ingreso_real_mediana', C.oro, 'Mejor ingreso');
+    }
+
+    var medidor;
+    function ancho(t, fuente) { medidor = medidor || document.createElement('canvas').getContext('2d'); medidor.font = fuente; return medidor.measureText(t).width; }
+    function opciones() {
+      var el = document.getElementById('chart'), chico = PM.pequeno(), dk = PM.dk();
+      var W = el.clientWidth || 600, H = el.clientHeight || 470;
+      var fil = ordenadas(); ITEMS = fil.map(function (x) { return x.r; });
+      var card = PM.var('--card') || '#ffffff', tinta = PM.col(C.tinta), pz = dk ? '#8A9699' : '#5C6B70', inter = PM.inter(), mono = PM.mono();
+      var fNom = chico ? 10.5 : 11.5, fCif = chico ? 10.5 : 11, fRk = chico ? 9.5 : 10, color = PM.col(med().color);
+      var rankW = Math.ceil(ancho('14', '500 ' + fRk + 'px ' + mono)) + 8;
+      var nameW = Math.ceil(Math.max.apply(null, ITEMS.map(function (r) { return ancho(corto(r), '500 ' + fNom + 'px ' + inter); })));
+      var plotL = rankW + nameW + 14, plotW = W - plotL - 6;
+      var vals = fil.map(function (x) { return x.v; }).filter(function (v) { return v != null; });
+      var hi = Math.max.apply(null, vals.concat([0])) || 1, PAD = 3, GAP = 4;
+      var maxLbl = Math.max.apply(null, ITEMS.map(function (r) { return ancho(txt(r), '600 ' + fCif + 'px ' + mono) + 2 * PAD + GAP; }));
+      var k = (plotW - maxLbl - 4) / hi, X = function (v) { return plotL + v * k; };
+      var sombra = dk ? 'rgba(226,232,240,.06)' : 'rgba(0,18,25,.045)', filete = dk ? '#2A3A50' : '#E2DDD3';
+      var serie = {
+        type: 'custom', id: 'ranking', name: med().nombre, coordinateSystem: 'cartesian2d', encode: { x: 0, y: 1, tooltip: 0 },
+        data: ITEMS.map(function (r, j) { return { id: r, value: [val(r) || 0, j] }; }),
+        renderItem: function (params, api) {
+          var r = ITEMS[params.dataIndex], cs = params.coordSys, cy = api.coord([0, api.value(1)])[1], rh = api.size([0, 1])[1];
+          var v = publicable(r) ? val(r) : null, bh = Math.round(Math.min(chico ? 15 : 18, rh * 0.6));
+          var hijos = [
+            { type: 'rect', z2: 0, shape: { x: cs.x, y: -rh / 2, width: cs.width, height: rh }, style: { fill: 'rgba(0,0,0,0)' }, emphasis: { style: { fill: sombra } } },
+            { type: 'text', z2: 5, x: cs.x, y: 0, style: { text: String(params.dataIndex + 1), fontFamily: mono, fontSize: fRk, fontWeight: 500, fill: pz, align: 'left', verticalAlign: 'middle' } },
+            { type: 'text', z2: 5, x: plotL - 10, y: 0, style: { text: corto(r), fontFamily: inter, fontSize: fNom, fontWeight: 500, fill: tinta, align: 'right', verticalAlign: 'middle' }, emphasis: { style: { fontWeight: 700 } } }
+          ];
+          if (v == null) hijos.push({ type: 'text', z2: 5, x: plotL + GAP, y: 0, style: { text: 'pocos casos', fontFamily: inter, fontSize: fCif - 1, fill: pz, align: 'left', verticalAlign: 'middle' } });
+          else {
+            hijos.push({ type: 'rect', z2: 2, shape: { x: plotL, y: -bh / 2, width: Math.max(1, X(v) - plotL), height: bh }, style: { fill: color, opacity: cal(r) === 1 ? 0.5 : 0.92 } });
+            hijos.push({ type: 'text', z2: 5, x: X(v) + GAP, y: 0, transition: ['x'], style: { text: txt(r), fontFamily: mono, fontSize: fCif, fontWeight: 600, fill: PM.tx(med().color), align: 'left', verticalAlign: 'middle' } });
+          }
+          if (params.dataIndex === 0) hijos.push({ type: 'line', z2: 1, silent: true, shape: { x1: plotL, y1: -rh / 2 + 2, x2: plotL, y2: cs.y + cs.height - cy - 2 }, style: { stroke: filete, lineWidth: 1 } });
+          return { type: 'group', y: cy, transition: ['y'], children: hijos };
+        }
+      };
+      return {
+        animationDurationUpdate: 650, animationEasingUpdate: 'cubicInOut',
+        grid: { left: 0, right: 0, top: 4, bottom: 4, containLabel: false },
+        xAxis: { type: 'value', min: 0, max: hi, show: false },
+        yAxis: { type: 'category', inverse: true, show: false, data: ITEMS.map(function (r, j) { return String(j); }) },
+        tooltip: PM.tooltip(function (p) {
+          var r = ITEMS[p.dataIndex]; if (!r) return '';
+          panel(r);
+          var h = PM.ttTitulo(r, estado.dominio + ' · ' + etqPer(estado.per));
+          Object.keys(MED).forEach(function (k) { h += PM.ttFila(MED[k].color, MED[k].nombre, txt(r, k), 'area'); });
+          return h;
+        }, { trigger: 'item' }),
+        series: [serie]
+      };
+    }
+
+    function panel(r) {
+      if (!D || !r) return;
+      estado.k = r;
+      document.getElementById('panel-fecha').textContent = estado.dominio + ' · ' + etqPer(estado.per);
+      var j19 = P.indexOf('2019'), v = val(r), v19 = j19 >= 0 ? val(r, null, j19) : null;
+      var desc = MED[estado.medida].desc + '.' + (v != null && v19 != null && j19 !== estado.per ? ' En 2019: ' + fmt(v19) + '.' : '');
+      var tabla = '<div class="ind">' + Object.keys(MED).map(function (k) { return '<span class="ind-n">' + MED[k].nombre + '</span><span class="ind-v">' + txt(r, k) + '</span>'; }).join('') + '</div>';
+      var html = PM.pb(med().color, r, txt(r), desc).replace(/<\/div>$/, tabla + '</div>');
+      document.getElementById('panel').innerHTML = html + PM.ctx(lectura(r));
+    }
+    function lectura(r) {
+      var pe = val(r, 'pct_ocupados'), inf = val(r, 'informalidad'), ing = val(r, 'ingreso_real_mediana'), muj = val(r, 'mujeres_pct');
+      if (pe == null) return 'Sin dato suficiente para ' + r + ' en ' + estado.dominio + '.';
+      var t = '<strong>' + r + '</strong> ocupa a <strong>' + PM.pct(pe, 1) + '</strong> de los trabajadores de ' + estado.dominio + '.';
+      if (inf != null && publicable(r, 'informalidad')) t += ' ' + PM.num(inf / 10, 1) + ' de cada 10 tienen un empleo informal';
+      if (ing != null && publicable(r, 'ingreso_real_mediana')) t += ' y la mitad gana menos de ' + L.bs(ing) + ' al mes';
+      t += '.';
+      if (muj != null) t += ' ' + (muj >= 50 ? 'Es una actividad mayoritariamente femenina (' + PM.pct(muj, 0) + ' mujeres).' : 'Las mujeres son ' + PM.pct(muj, 0) + ' de sus ocupados.');
+      return t;
+    }
+
+    PM.leyendaImagen = function () { return []; };
+    PM.tablaDatos = function () {
+      var ks = Object.keys(MED);
+      return { cols: ['Actividad', 'Dónde', 'Periodo'].concat(ks.map(function (k) { return MED[k].nombre + (MED[k].fmt === 'bs' ? ' (Bs del 1T-2026)' : MED[k].fmt === 'h' ? ' (horas)' : ' (%)'); })),
+        filas: RAMAS.map(function (r) { return [r, estado.dominio, etqPer(estado.per)].concat(ks.map(function (k) { return publicable(r, k) ? val(r, k) : null; })); }) };
+    };
+
+    var PREGUNTAS = [
+      ['¿Qué ramas son?', 'Las 21 secciones de la Clasificación de Actividades Económicas de Bolivia (CAEB) que el INE asigna a la ocupación principal, agrupadas en 14: información y comunicaciones, finanzas, inmobiliarias, servicios profesionales y administrativos van juntos; también electricidad, gas y agua; y artes, otros servicios y organismos extraterritoriales.'],
+      ['¿Por qué el agro es tan informal y gana tan poco?', 'La mayor parte del empleo agropecuario es de productores por cuenta propia y familiares sin remuneración en unidades campesinas, sin registro ni contabilidad: por definición, informales. Su ingreso monetario es bajo porque parte de lo que producen se consume en el hogar y no se registra como ingreso laboral.'],
+      ['¿Qué tan precisas son las cifras?', 'Se juntan cuatro trimestres (año completo o año móvil). Entre paréntesis y con barra más clara, las cifras referenciales (error de muestreo de 15 a 25 %); «pocos casos» cuando no hay suficientes encuestados. Las tarjetas de arriba comparan sólo las ramas con 5 % o más del empleo (así no gana una rama diminuta o una que es informal por definición, como el trabajo en hogares). En los departamentos chicos, las ramas pequeñas (minería en Pando, electricidad en el Beni) suelen quedar así.'],
+      ['¿Ocupados o empleos?', 'Se cuenta a cada persona una vez, por su ocupación principal (la que le da más ingresos o horas). Quien tiene un segundo trabajo no aparece en la rama de ese segundo trabajo.']
+    ];
+  })();
+  </script>
+</body>
+</html>

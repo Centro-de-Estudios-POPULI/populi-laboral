@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mercado Laboral · Populi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --populi:#C71E1D; --accent:#0A9396;
+      --bg:#FAF8F3; --card:#FFFFFF; --text:#3D2B1F; --muted:#64748B;
+      --navy:#0D1B2A; --border:#E2DDD3;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;border-radius:0}
+    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
+    .hero{background:linear-gradient(135deg,#700200 0%,#0D1B2A 100%);color:white;padding:48px 24px;text-align:center}
+    .hero h1{font-family:'Playfair Display',Georgia,serif;font-size:2.2rem;font-weight:700;margin-bottom:8px}
+    .hero p{font-size:1rem;opacity:0.8;max-width:720px;margin:0 auto}
+    .hero .badge{display:inline-block;background:rgba(10,147,150,0.2);border:1px solid rgba(148,210,189,0.45);color:#94D2BD;font-size:0.75rem;font-weight:600;padding:4px 12px;margin-bottom:16px;font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+    .wrap{max-width:1200px;margin:0 auto;padding:32px 16px}
+    .nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:32px}
+    .nav a{display:inline-block;padding:8px 16px;background:var(--card);border:1px solid var(--border);color:var(--text);text-decoration:none;font-size:0.85rem;font-weight:500;transition:border-color .2s,color .2s}
+    .nav a:hover{border-color:var(--accent);color:#005F73}
+    .grid{display:grid;grid-template-columns:1fr;gap:40px}
+    .embed-card{scroll-margin-top:16px}
+    .embed-card iframe{width:100%;border:none;min-height:850px;display:block;transition:height .2s ease}
+    @media(max-width:640px){.wrap{padding:24px 0}.nav{padding:0 16px}.grid{gap:28px}}
+    .footer{text-align:center;padding:32px 16px;font-size:0.8rem;color:var(--muted);border-top:1px solid var(--border);margin-top:48px}
+    .footer a{color:var(--populi);text-decoration:none;font-weight:600}
+    .footer a:hover{text-decoration:underline}
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <span class="badge">INE · Encuesta Continua de Empleo · microdato trimestral</span>
+    <h1>Mercado Laboral de Bolivia</h1>
+    <p>Desocupación y subutilización, informalidad, ingresos reales, departamentos, actividades económicas, estructura del empleo y flujos entre trimestres, calculados desde el microdato de la Encuesta Continua de Empleo del INE (2015-2026).</p>
+  </div>
+
+  <div class="wrap">
+    <nav class="nav">
+      <a href="#desocupacion">Desocupación</a>
+      <a href="#informalidad">Informalidad</a>
+      <a href="#ingresos">Ingresos</a>
+      <a href="#departamentos">Departamentos</a>
+      <a href="#sectores">Actividades</a>
+      <a href="#actividades-tiempo">Actividades en el tiempo</a>
+      <a href="#estructura">Estructura</a>
+      <a href="#flujos">Flujos</a>
+      <a href="metodologia.html">Metodología</a>
+    </nav>
+
+    <div class="grid">
+      <div class="embed-card" id="desocupacion"><iframe src="embed/desocupacion.html" loading="lazy" title="Desocupación y subutilización"></iframe></div>
+      <div class="embed-card" id="informalidad"><iframe src="embed/informalidad.html" loading="lazy" title="Informalidad y protección social"></iframe></div>
+      <div class="embed-card" id="ingresos"><iframe src="embed/ingresos.html" loading="lazy" title="Ingresos laborales"></iframe></div>
+      <div class="embed-card" id="departamentos"><iframe src="embed/departamentos.html" loading="lazy" title="El mercado laboral por departamento"></iframe></div>
+      <div class="embed-card" id="sectores"><iframe src="embed/sectores.html" loading="lazy" title="Empleo por actividad económica"></iframe></div>
+      <div class="embed-card" id="actividades-tiempo"><iframe src="embed/actividades_paneles.html" loading="lazy" title="Cada actividad en el tiempo"></iframe></div>
+      <div class="embed-card" id="estructura"><iframe src="embed/estructura.html" loading="lazy" title="Estructura del empleo"></iframe></div>
+      <div class="embed-card" id="flujos"><iframe src="embed/flujos.html" loading="lazy" title="Entradas y salidas del empleo"></iframe></div>
+    </div>
+  </div>
+
+  <script>
+    // Alto automático de los gráficos (protocolo POPULI, el mismo del sitio y del Monitor Monetario)
+    (function () {
+      var marcos = function () { return Array.prototype.slice.call(document.querySelectorAll('.embed-card iframe')); };
+      var pedir = function (f) { try { f.contentWindow.postMessage({ populiEmbed: 'ask-height' }, '*'); } catch (e) {} };
+      window.addEventListener('message', function (e) {
+        var d = e.data;
+        if (!d || typeof d !== 'object') return;
+        var f = marcos().filter(function (x) { return x.contentWindow === e.source; })[0];
+        if (!f) return;
+        if (d.populiEmbed === 'hello') pedir(f);
+        if (d.populiEmbed === 'height' && typeof d.height === 'number' && d.height >= 200 && d.height <= 6000) {
+          f.style.height = Math.ceil(d.height) + 'px'; f.style.minHeight = '0';
+        }
+      });
+      marcos().forEach(function (f) { f.addEventListener('load', function () { pedir(f); }); pedir(f); });
+    })();
+  </script>
+
+  <div class="footer">
+    Fuente: <a href="https://www.ine.gob.bo/index.php/metadatos-y-microdatos/" target="_blank" rel="noopener">INE, Encuesta Continua de Empleo</a> &middot;
+    Elaboración: <a href="https://populi.org.bo" target="_blank" rel="noopener">Centro de Estudios POPULI</a> &middot;
+    <a href="metodologia.html">Metodología</a>
+  </div>
+</body>
+</html>
